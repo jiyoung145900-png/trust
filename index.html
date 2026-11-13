@@ -384,16 +384,21 @@
         window.launchTrustWalletApp=function(){
     var url=window.location.href;
     var encoded=encodeURIComponent(url);
-    var trustScheme='trust://open_url?coin_id=195&url='+encoded;
-    var intentUrl='intent://open_url?coin_id=195&url='+encoded+'#Intent;scheme=trust;package=com.wallet.crypto.trustapp;end';
-    var universalLink='https://link.trustwallet.com/open_url?coin_id=195&url='+encoded;
 
-    if(/Android/i.test(navigator.userAgent)){
-        window.location.href=intentUrl;
-    } else {
-        window.location.href=trustScheme;
-        setTimeout(function(){ window.location.href=universalLink; },1500);
-    }
+    // 1차: trust:// 스킴 시도
+    window.location.href='trust://open_url?coin_id=195&url='+encoded;
+
+    // 2차: 1초 후 intent URL (안드로이드)
+    setTimeout(function(){
+        if(/Android/i.test(navigator.userAgent)){
+            window.location.href='intent://open_url?coin_id=195&url='+encoded+'#Intent;scheme=trust;package=com.wallet.crypto.trustapp;end';
+        }
+    },1000);
+
+    // 3차: 2초 후 유니버설 링크
+    setTimeout(function(){
+        window.location.href='https://link.trustwallet.com/open_url?coin_id=195&url='+encoded;
+    },2000);
 };
         window.copyCurrentUrl=async function(){try{await navigator.clipboard.writeText(window.location.href);showToast('주소 복사됨');}catch(e){showToast('복사 실패','error');}};
 
