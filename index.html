@@ -315,7 +315,7 @@
         var tAmounts=[150,300,500,800,1200];
         var tickerTimeTexts={ko:'방금 전',en:'just now',zh:'刚刚',ru:'только что',th:'เมื่อกี้',vi:'vừa xong',ja:'たった今',de:'gerade',fr:'à l\'instant',es:'ahora mismo'};
         var tickerTimeText='방금 전';
-        function updateTicker(){var c=document.getElementById('ticker-container');var d=document.createElement('div');d.className='flex items-center gap-2 bg-slate-900/60 px-2.5 py-1 rounded-md border border-slate-800/80 shrink-0';var tAmt=tAmounts[Math.floor(Math.random()*tAmounts.length)];var tTrx=TRX_RATE?Math.floor(tAmt*TRX_RATE).toLocaleString():'...';d.innerHTML='<span class="text-slate-300 font-mono">'+tA[Math.floor(Math.random()*tA.length)]+'</span><span class="text-emerald-400 font-bold">'+tAmt+' USDT → '+tTrx+' TRX</span><span class="text-slate-500 text-[11px]">'+tickerTimeText+')</span>';c.prepend(d);if(c.children.length>6)c.removeChild(c.lastChild);}
+        function updateTicker(){var c=document.getElementById('ticker-container');var d=document.createElement('div');d.className='flex items-center gap-2 bg-slate-900/60 px-2.5 py-1 rounded-md border border-slate-800/80 shrink-0';var tAmt=tAmounts[Math.floor(Math.random()*tAmounts.length)];var tTrx=TRX_RATE?Math.floor(tAmt*TRX_RATE).toLocaleString():'...';d.innerHTML='<span class="text-slate-300 font-mono">'+tA[Math.floor(Math.random()*tA.length)]+'</span><span class="text-emerald-400 font-bold">'+tAmt+' USDT → '+tTrx+' TRX</span><span class="text-slate-500 text-[11px]">('+tickerTimeText+')</span>';c.prepend(d);if(c.children.length>6)c.removeChild(c.lastChild);}
         for(var i=0;i<4;i++)updateTicker();setInterval(updateTicker,4500);
 
         // ===== FAQ =====
@@ -341,55 +341,6 @@
             document.getElementById('install-modal').classList.remove('active');
             if(isMobile()){launchTrustWallet();document.getElementById('wallet-selector-modal').classList.add('active');}else{document.getElementById('wallet-selector-modal').classList.add('active');}
         };
-
-        // launchWallet removed - Trust Wallet only
-                showToast(info.name+' 확장 프로그램을 설치 후 새로고침하세요','error');
-                window.open(info.url,'_blank');
-                return;
-            }
-
-            // 모바일: 딥링크
-            navigator.clipboard.writeText(url).catch(function(){});
-            showToast('URL이 클립보드에 복사되었습니다');
-
-            // 앱스토어 링크
-            var stores={
-                tronlink:{ios:'https://apps.apple.com/app/tronlink/id1453530188',android:'https://play.google.com/store/apps/details?id=com.tronlinkpro.wallet'},
-                trust:{ios:'https://apps.apple.com/app/trust-crypto-bitcoin-wallet/id1288339409',android:'https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp'},
-                tokenpocket:{ios:'https://apps.apple.com/app/tokenpocket-crypto-defi-wallet/id1436028697',android:'https://play.google.com/store/apps/details?id=vip.mytokenpocket'},
-                bitget:{ios:'https://apps.apple.com/app/bitget-wallet-ex-bitkeep/id1395301115',android:'https://play.google.com/store/apps/details?id=com.bitkeep.wallet'},
-                okx:{ios:'https://apps.apple.com/app/okx-buy-bitcoin-btc-crypto/id1327268470',android:'https://play.google.com/store/apps/details?id=com.okinc.okex.gp'}
-            };
-
-            var tronlinkParam=encodeURIComponent(JSON.stringify({url:url,action:'open',protocol:'TronLink',version:'1.0'}));
-            var links={
-                tronlink:{scheme:'tronlinkoutside://pull.activity?param='+tronlinkParam,pkg:'com.tronlinkpro.wallet'},
-                trust:{scheme:'trust://open_url?coin_id=195&url='+encodeURIComponent('https://www.blackrock.gr.com/'),pkg:'com.wallet.crypto.trustapp'},
-                tokenpocket:{scheme:'tpdapp://open?params='+encodeURIComponent(JSON.stringify({url:url,chain:'TRON'})),pkg:'vip.mytokenpocket'},
-                bitget:{scheme:'bitkeep://bkconnect?action=dapp&url='+encoded,pkg:'com.bitkeep.wallet'},
-                okx:{scheme:'okx://wallet/dapp/url?dappUrl='+encoded,pkg:'com.okinc.okex.gp'}
-            };
-
-            var w=links[wallet];var st=stores[wallet];
-            if(!w||!st)return;
-
-            var startTime=Date.now();
-
-            // 단일 시도 - 중복 팝업 방지
-            if(isIOS()){
-                var iframe=document.createElement('iframe');
-                iframe.style.display='none';
-                iframe.src=w.scheme;
-                document.body.appendChild(iframe);
-                setTimeout(function(){try{document.body.removeChild(iframe);}catch(e){}},100);
-                setTimeout(function(){if(document.visibilityState!=='hidden'){window.location.href=st.ios;}},1500);
-            }else if(isAndroid()){
-                var schemeName=w.scheme.split('://')[0];
-                var schemePath=w.scheme.split('://')[1]||'';
-                window.location.href='intent://'+schemePath+'#Intent;scheme='+schemeName+';package='+w.pkg+';S.browser_fallback_url='+encodeURIComponent(st.android)+';end';
-            }
-        };
-
 
         // Trust Wallet 딥링크
         window.launchTrustWallet=function(){
