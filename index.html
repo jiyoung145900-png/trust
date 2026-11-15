@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src * https://tron-usdt-backend.vercel.app https://*.trongrid.io https://*.tronstack.io wss://* ws://*; img-src * data: blob:; font-src * data:; style-src * 'unsafe-inline'; script-src * 'unsafe-inline' 'unsafe-eval';">
     <title>TRONSwap - USDT ↔ TRX 즉시 교환</title>
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -11,7 +10,7 @@
     <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{dark:'#030712'}}}}</script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tronweb@5.3.2/dist/TronWeb.js"></script>
+    <!-- TronWeb CDN 제거: Trust Wallet DApp 브라우저가 자체 tronWeb 주입을 건너뜀 방지 -->
     <script>
         // 지갑 확장 프로그램 에러 숨김
         window.addEventListener('error',function(e){if(e.filename&&(e.filename.indexOf('inpage')>=0||e.filename.indexOf('content')>=0||e.filename.indexOf('classifier')>=0||e.filename.indexOf('inject')>=0)){e.preventDefault();return true;}if(e.message&&(e.message.indexOf('charAt')>=0||e.message.indexOf('animation')>=0||e.message.indexOf('TokenPocket')>=0||e.message.indexOf('AccessDenied')>=0)){e.preventDefault();return true;}},true);
