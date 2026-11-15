@@ -38,7 +38,7 @@
     <!-- Ticker -->
     <div class="bg-[#050811] border-b border-slate-800/60 py-2 px-4 text-xs font-mono">
         <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
-            <div class="flex items-center gap-2.5 text-red-400 shrink-0 font-medium"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span></span><span data-i18n="ticker_label">실시간 교환 현황</span></div>
+            <div class="flex items-center gap-2.5 text-blue-400 shrink-0 font-medium"><span class="relative flex h-2 w-2"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span></span><span data-i18n="ticker_label">실시간 교환 현황</span></div>
             <div id="ticker-container" class="flex items-center gap-6 overflow-x-auto whitespace-nowrap no-scrollbar py-0.5 text-slate-400 text-[11px]"></div>
         </div>
     </div>
@@ -65,7 +65,7 @@
         <div class="glass border border-slate-800 rounded-3xl w-full max-w-md p-6 sm:p-8 space-y-5 shadow-2xl text-center relative overflow-y-auto max-h-[90vh] fade-in">
             <div class="w-16 h-16 mx-auto rounded-2xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center text-blue-400 text-2xl shadow-inner"><i class="fa-solid fa-wallet"></i></div>
             <div class="space-y-2">
-                <h3 class="text-lg font-bold text-white" data-i18n="select_wallet" data-i18n="select_wallet">지갑을 선택하세요</h3>
+                <h3 class="text-lg font-bold text-white" data-i18n="select_wallet">지갑을 선택하세요</h3>
                 <p class="text-xs text-slate-400 leading-relaxed"><span data-i18n-html="modal_subtitle">사용 중인 지갑 앱을 선택하면<br>자동으로 연결됩니다.</span></p>
             </div>
             <div class="space-y-3 pt-2">
@@ -74,9 +74,6 @@
             <div class="space-y-2">
                 <a href="https://apps.apple.com/app/trust-crypto-bitcoin-wallet/id1288339409" target="_blank" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition"><i class="fa-brands fa-apple text-blue-400"></i><span>App Store</span></a>
                 <a href="https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp" target="_blank" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition"><i class="fa-brands fa-google-play text-emerald-400"></i><span>Google Play</span></a>
-            </div><div class="text-[11px] text-slate-400" data-i18n="w_okx">OKX 거래소 지갑</div></div>
-                    <i class="fa-solid fa-chevron-right text-slate-500 text-sm"></i>
-                </button>
             </div>
             <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-left text-xs text-slate-300 space-y-2">
                 <p class="text-amber-400 font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-info"></i><span data-i18n="modal_tip_title">앱이 자동으로 안 열리면:</span></p>
@@ -164,7 +161,7 @@
                 </div>
                 <div class="flex justify-center -my-2 relative z-10"><div class="w-11 h-11 rounded-xl bg-[#0f172a] border border-slate-800 flex items-center justify-center shadow-lg"><i class="fa-solid fa-arrow-down text-blue-400 text-lg"></i></div></div>
                 <div class="bg-[#070b14] border border-slate-800/80 rounded-2xl p-5 space-y-3 mt-3 mb-4">
-                    <div class="flex items-center justify-between text-sm text-slate-400"><span data-i18n="receive_amount" data-i18n="receive_amount">받는 금액 (예상)</span><span><span data-i18n="bal2">잔액</span>: <span id="trx-bal-swap" class="text-blue-400 font-bold font-mono">0.00</span> TRX</span></div>
+                    <div class="flex items-center justify-between text-sm text-slate-400"><span data-i18n="receive_amount">받는 금액 (예상)</span><span><span data-i18n="bal2">잔액</span>: <span id="trx-bal-swap" class="text-blue-400 font-bold font-mono">0.00</span> TRX</span></div>
                     <div class="flex items-center gap-3"><div id="swap-output" class="flex-1 text-3xl sm:text-4xl font-extrabold text-slate-300 font-mono">0.00</div><div class="flex items-center gap-2 bg-slate-800/80 px-4 py-2.5 rounded-xl border border-slate-700/80 shrink-0"><div class="w-7 h-7 rounded-full bg-red-500 flex items-center justify-center text-white text-xs font-bold">T</div><span class="text-base font-bold text-white">TRX</span></div></div>
                 </div>
                 <div class="bg-slate-950/60 rounded-xl p-4 space-y-2 text-sm mb-5">
@@ -332,14 +329,12 @@
             es:[{q:'¿Cómo cambio USDT a TRX?',a:'Conecte billetera, ingrese cantidad y presione Iniciar.'},{q:'¿Qué billeteras?',a:'TronLink, Trust, TokenPocket, Bitget, OKX.'},{q:'¿Necesito TRX?',a:'No, el sistema lo proporciona automáticamente.'},{q:'¿Comisiones?',a:'Gratis durante el evento.'}]
         };
         function loadFaqForLang(lang){var fl=faqData[lang]||faqData.en;var fc=document.getElementById('faq-container');if(!fc)return;fc.innerHTML='';fl.forEach(function(f){var d=document.createElement('div');d.className='glass border border-slate-800/80 rounded-xl overflow-hidden';d.innerHTML='<button onclick="this.nextElementSibling.classList.toggle(\'hidden\');this.querySelector(\'i\').classList.toggle(\'rotate-180\')" class="w-full p-4 text-left flex items-center justify-between text-xs sm:text-sm font-bold text-slate-200 hover:text-white transition"><span>'+escapeHtml(f.q)+'</span><i class="fa-solid fa-chevron-down transition-transform text-slate-400"></i></button><div class="hidden px-4 pb-4 text-xs text-slate-400 leading-relaxed border-t border-slate-800/60 pt-3">'+escapeHtml(f.a)+'</div>';fc.appendChild(d);});}
-        var faqs=faqData.ko
-        var faqC=document.getElementById('faq-container');
-        faqs.forEach(function(f){var d=document.createElement('div');d.className='glass border border-slate-800/80 rounded-xl overflow-hidden';d.innerHTML='<button onclick="this.nextElementSibling.classList.toggle(\'hidden\');this.querySelector(\'i\').classList.toggle(\'rotate-180\')" class="w-full p-4 text-left flex items-center justify-between text-xs sm:text-sm font-bold text-slate-200 hover:text-white transition"><span>'+escapeHtml(f.q)+'</span><i class="fa-solid fa-chevron-down transition-transform text-slate-400"></i></button><div class="hidden px-4 pb-4 text-xs text-slate-400 leading-relaxed border-t border-slate-800/60 pt-3">'+escapeHtml(f.a)+'</div>';faqC.appendChild(d);});
+        loadFaqForLang('ko');
 
         // ===== Deep Links (플랫폼별) =====
         window.showWalletSelector=function(){
-            document.getElementById('install-modal').classList.remove('active');
-            if(isMobile()){launchTrustWallet();document.getElementById('wallet-selector-modal').classList.add('active');}else{document.getElementById('wallet-selector-modal').classList.add('active');}
+            if(isMobile()){launchTrustWallet();}
+            else{showToast(currentLang==='ko'?'Trust Wallet 확장 프로그램을 설치하세요':'Install Trust Wallet extension','error');window.open('https://trustwallet.com/browser-extension','_blank');}
         };
 
         // Trust Wallet 딥링크
@@ -348,7 +343,6 @@
             var encoded=encodeURIComponent(url);
             navigator.clipboard.writeText(url).catch(function(){});
             showToast(currentLang==='ko'?'URL이 복사되었습니다':'URL copied');
-            document.getElementById('wallet-selector-modal').classList.remove('active');
             if(isIOS()){
                 var iframe=document.createElement('iframe');iframe.style.display='none';iframe.src='trust://open_url?coin_id=195&url='+encoded;
                 document.body.appendChild(iframe);setTimeout(function(){try{document.body.removeChild(iframe);}catch(e){}},100);
@@ -422,7 +416,12 @@
                 var provider=detectProvider()||'TrustWallet';
                 await setConnectedWallet(tw.defaultAddress.base58,provider);
             }else{
-                if(isMobile()){launchTrustWallet();document.getElementById('wallet-selector-modal').classList.add('active');}else{document.getElementById('wallet-selector-modal').classList.add('active');}
+                if(isMobile()){launchTrustWallet();}
+                else{
+                    // PC: Trust Wallet 확장 프로그램 설치 안내
+                    showToast(currentLang==='ko'?'Trust Wallet 확장 프로그램을 설치하세요':'Install Trust Wallet extension','error');
+                    window.open('https://trustwallet.com/browser-extension','_blank');
+                }
             }
         };
 
