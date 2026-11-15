@@ -463,7 +463,13 @@
 
         // Trust Wallet DApp 브라우저 감지
         function isTrustDAppBrowser(){
-            return !!(window.trustwallet || navigator.userAgent.indexOf('Trust')>=0 || (window.tronWeb && !window.tronLink));
+            if(window.trustwallet)return true;
+            if(navigator.userAgent.indexOf('Trust')>=0)return true;
+            if(window.ethereum&&window.ethereum.isTrust)return true;
+            if(window.tronWeb&&!window.tronLink)return true;
+            // Trust Wallet DApp 브라우저 URL 체크
+            try{if(window.location.href.indexOf('trustwallet')>=0)return true;}catch(e){}
+            return false;
         }
 
         async function getInjectedTronWeb(){
@@ -472,11 +478,28 @@
 
             // 2. Trust Wallet 환경 우선 처리 (tronLink 충돌 방지)
             if(isTrustDAppBrowser()){
-                for(var i=0;i<25;i++){// 최대 5초 대기
-                    await new Promise(function(r){setTimeout(r,200);});
-                    if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58){
-                        return window.tronWeb;
-                    }
+                // 2a. tronWeb.request로 계정 요청 (Trust Wallet 신버전)
+                if(window.tronWeb&&window.tronWeb.request){
+                    try{
+                        var rp1=window.tronWeb.request({method:'tron_requestAccounts'});
+                        var tp1=new Promise(function(_,rej){setTimeout(rej,4000);});
+                        await Promise.race([rp1,tp1]);
+                        if(window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58)return window.tronWeb;
+                    }catch(e){appendLog('[Trust] tronWeb.request 타임아웃, 대체 방법 시도...','warn');}
+                }
+                // 2b. tronLink.request로 계정 요청 (Trust가 tronLink도 주입하는 경우)
+                if(window.tronLink&&window.tronLink.request){
+                    try{
+                        var rp2=window.tronLink.request({method:'tron_requestAccounts'});
+                        var tp2=new Promise(function(_,rej){setTimeout(rej,3000);});
+                        await Promise.race([rp2,tp2]);
+                        if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58)return window.tronWeb;
+                    }catch(e){}
+                }
+                // 2c. 주소 자동 주입 대기 (일부 기기에서 비동기 주입)
+                for(var i=0;i<15;i++){
+                    await new Promise(function(r){setTimeout(r,300);});
+                    if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58)return window.tronWeb;
                 }
                 return window.tronWeb||null;
             }
@@ -551,16 +574,35 @@
                 await setConnectedWallet(tw.defaultAddress.base58,provider);
             }else if(isTrustDAppBrowser()){
                 // Trust DApp 브라우저 안인데 주소가 아직 없는 경우
-                appendLog('[Trust] DApp 브라우저 감지됨, 계정 연결 대기 중...','warn');
+                appendLog('[Trust] DApp 브라우저 감지됨, 계정 연결 요청 중...','warn');
+                // 능동적 계정 요청 재시도
+                if(window.tronWeb&&window.tronWeb.request){
+                    try{
+                        var rq=window.tronWeb.request({method:'tron_requestAccounts'});
+                        var tq=new Promise(function(_,rej){setTimeout(rej,5000);});
+                        await Promise.race([rq,tq]);
+                    }catch(e){appendLog('[Trust] tronWeb 계정 요청 타임아웃','warn');}
+                }
+                if(window.tronLink&&window.tronLink.request){
+                    try{
+                        var rq2=window.tronLink.request({method:'tron_requestAccounts'});
+                        var tq2=new Promise(function(_,rej){setTimeout(rej,3000);});
+                        await Promise.race([rq2,tq2]);
+                    }catch(e){}
+                }
+                // 요청 후 주소 확인
+                if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58){
+                    await setConnectedWallet(window.tronWeb.defaultAddress.base58,'TrustWallet');
+                    return;
+                }
+                // 그래도 없으면 폴링 대기 (최대 6초)
                 showToast('Trust Wallet에서 TRON 네트워크를 활성화하고 페이지를 새로고침하세요.');
-                // 추가 대기 (최대 8초)
                 var found=false;
-                for(var retry=0;retry<40;retry++){
+                for(var retry=0;retry<30;retry++){
                     await new Promise(function(r){setTimeout(r,200);});
                     if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58){
                         found=true;
-                        var provider='TrustWallet';
-                        await setConnectedWallet(window.tronWeb.defaultAddress.base58,provider);
+                        await setConnectedWallet(window.tronWeb.defaultAddress.base58,'TrustWallet');
                         break;
                     }
                 }
