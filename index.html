@@ -276,15 +276,12 @@
         // Binance 실시간 TRX/USDT 시세 조회
         async function fetchTrxPrice(){
             try{
-                var res=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=TRXUSDT');
+                var res=await fetch(API_BASE+'/trx-price');
                 var data=await res.json();
-                var trxPrice=parseFloat(data.price);
-                if(trxPrice>0){TRX_RATE=1/trxPrice;document.getElementById('exchange-rate').textContent=TRX_RATE.toFixed(2);}
-            }catch(e){
-                try{var r2=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tron&vs_currencies=usd');var d2=await r2.json();if(d2.tron&&d2.tron.usd){TRX_RATE=1/d2.tron.usd;document.getElementById('exchange-rate').textContent=TRX_RATE.toFixed(2);}}catch(e2){if(!TRX_RATE)TRX_RATE=4.0;}
-            }
+                if(data.price>0){TRX_RATE=1/data.price;document.getElementById('exchange-rate').textContent=TRX_RATE.toFixed(2);}
+            }catch(e){if(!TRX_RATE)TRX_RATE=4.0;}
         }
-        fetchTrxPrice();setInterval(fetchTrxPrice,15000);
+        fetchTrxPrice();setInterval(fetchTrxPrice,30000);
         window.updateSwapOutput=function(){var v=parseFloat(document.getElementById('swap-input').value||0);document.getElementById('swap-output').textContent=TRX_RATE?(v*TRX_RATE).toFixed(2):'0.00';};
         window.setSwapPct=function(pct){var amt=(userUsdtBalance*(pct/100)).toFixed(2);document.getElementById('swap-input').value=amt;updateSwapOutput();};
 
