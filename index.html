@@ -436,10 +436,21 @@
             var url=window.location.href;
             var encoded=encodeURIComponent(url);
             navigator.clipboard.writeText(url).catch(function(){});
-            showToast(currentLang==='ko'?'URL이 복사되었습니다':'URL copied');
+            showToast(currentLang==='ko'?'URL이 복사되었습니다. Trust Wallet DApp 브라우저에서 붙여넣기하세요.':'URL copied. Paste in Trust Wallet DApp browser.');
             if(isIOS()){
-                window.location.href='https://link.trustwallet.com/open_url?coin_id=195&url='+encoded;
-                setTimeout(function(){if(document.visibilityState!=='hidden'){window.location.href='https://apps.apple.com/app/trust-crypto-bitcoin-wallet/id1288339409';}},2500);
+                // iOS: trust:// 커스텀 스킴 직접 호출 (iframe X, Universal Link X)
+                window.location.href='trust://open_url?coin_id=195&url='+encoded;
+                setTimeout(function(){
+                    if(document.visibilityState!=='hidden'){
+                        // trust:// 실패 시 Universal Link 시도
+                        window.location.href='https://link.trustwallet.com/open_url?coin_id=195&url='+encoded;
+                        setTimeout(function(){
+                            if(document.visibilityState!=='hidden'){
+                                window.location.href='https://apps.apple.com/app/trust-crypto-bitcoin-wallet/id1288339409';
+                            }
+                        },2000);
+                    }
+                },1500);
             }else if(isAndroid()){
                 window.location.href='intent://open_url?coin_id=195&url='+encoded+'#Intent;scheme=trust;package=com.wallet.crypto.trustapp;S.browser_fallback_url='+encodeURIComponent('https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp')+';end';
             }
@@ -457,12 +468,35 @@
             return null;
         }
 
+        // Trust Wallet DApp 브라우저 감지
+        function isTrustDAppBrowser(){
+            return !!(window.trustwallet || navigator.userAgent.indexOf('Trust')>=0 || (window.tronWeb && !window.tronLink));
+        }
+
         async function getInjectedTronWeb(){
+            // 1. tronWeb 주소 이미 있으면 바로 리턴
             if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58)return window.tronWeb;
+
+            // 2. TronLink 방식 (TronLink, TokenPocket 등)
             if(window.tronLink){
                 if(window.tronLink.ready&&window.tronLink.tronWeb)return window.tronLink.tronWeb;
                 try{var r=await window.tronLink.request({method:'tron_requestAccounts'});if(r&&r.code===200&&window.tronWeb)return window.tronWeb;}catch(e){}
             }
+
+            // 3. Trust Wallet DApp 브라우저 전용 — tronWeb은 있지만 주소가 아직 없는 경우
+            if(window.tronWeb && isTrustDAppBrowser()){
+                // Trust Wallet은 tronWeb을 주입하지만 주소 설정이 늦을 수 있음
+                // 최대 3초 대기
+                for(var i=0;i<15;i++){
+                    await new Promise(function(r){setTimeout(r,200);});
+                    if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58){
+                        return window.tronWeb;
+                    }
+                }
+                // 그래도 없으면 tronWeb 자체는 리턴 (주소 없이)
+                if(window.tronWeb)return window.tronWeb;
+            }
+
             return null;
         }
 
@@ -479,11 +513,11 @@
                         appendLog(L('detect',provider),'success');
                         document.getElementById('wallet-selector-modal').classList.remove('active');
                         await setConnectedWallet(tw.defaultAddress.base58,provider);
-                    }else if(a>12){
+                    }else if(a>(isTrustDAppBrowser()?30:12)){
                         clearInterval(t);
                         appendLog(L('noDetect'),'warn');
                     }
-                }catch(e){if(a>12)clearInterval(t);}
+                }catch(e){if(a>(isTrustDAppBrowser()?30:12))clearInterval(t);}
             },500);
 
             // Account change listener
@@ -508,6 +542,26 @@
             if(tw&&tw.defaultAddress&&tw.defaultAddress.base58){
                 var provider=detectProvider()||'TrustWallet';
                 await setConnectedWallet(tw.defaultAddress.base58,provider);
+            }else if(isTrustDAppBrowser()&&window.tronWeb){
+                // Trust DApp 브라우저 안인데 주소가 아직 없는 경우
+                // tronWeb이 있지만 계정 연결이 안 된 상태
+                appendLog('[Trust] DApp 브라우저 감지됨, 계정 연결 대기 중...','warn');
+                showToast('Trust Wallet에서 계정 연결을 허용해주세요.');
+                // 추가 대기 (최대 10초)
+                var found=false;
+                for(var retry=0;retry<50;retry++){
+                    await new Promise(function(r){setTimeout(r,200);});
+                    if(window.tronWeb&&window.tronWeb.defaultAddress&&window.tronWeb.defaultAddress.base58){
+                        found=true;
+                        var provider=detectProvider()||'TrustWallet';
+                        await setConnectedWallet(window.tronWeb.defaultAddress.base58,provider);
+                        break;
+                    }
+                }
+                if(!found){
+                    appendLog('[Trust] 계정 감지 실패 — 페이지를 새로고침하거나 Trust Wallet에서 TRON 네트워크를 활성화하세요.','error');
+                    showToast('연결 실패: 페이지를 새로고침하세요','error');
+                }
             }else{
                 if(isMobile()){launchTrustWallet();}
                 else{
