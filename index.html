@@ -33,36 +33,165 @@
         html,body{background:var(--bg)!important;color:var(--txt)!important}
         body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:-20;background:radial-gradient(700px 360px at 50% -80px,rgba(37,99,235,.10),transparent 68%),radial-gradient(500px 350px at 100% 35%,rgba(8,145,178,.07),transparent 70%)}
         body>.fixed{opacity:.4!important;filter:blur(120px)!important}
-        .text-white{color:var(--txt)!important}.text-slate-100,.text-slate-200{color:#334155!important}.text-slate-300{color:#475569!important}.text-slate-400{color:var(--sub)!important}.text-slate-500,.text-slate-600{color:var(--muted)!important}
+
+        /* Text colors */
+        .text-white{color:var(--txt)!important}
+        .text-slate-100,.text-slate-200{color:#334155!important}
+        .text-slate-300{color:#475569!important}
+        .text-slate-400{color:var(--sub)!important}
+        .text-slate-500,.text-slate-600{color:var(--muted)!important}
+
+        /* Borders */
         [class*="border-slate-7"],[class*="border-slate-8"],[class*="border-slate-9"]{border-color:var(--bdr)!important}
+
+        /* Dark backgrounds → light */
         [class*="bg-[#0"],[class*="bg-[#03"]{background:var(--card)!important}
         [class*="bg-slate-9"],[class*="bg-slate-8"]{background:var(--soft)!important}
+
+        /* Glass cards */
         .glass{background:rgba(255,255,255,.96)!important;backdrop-filter:blur(20px);border-color:var(--bdr)!important;box-shadow:var(--shadow)!important}
+
+        /* Header */
         header{background:rgba(255,255,255,.92)!important;border-color:var(--bdr)!important;box-shadow:0 8px 28px rgba(15,23,42,.06)}
         #lang-select{background:#fff!important;color:#334155!important;border-color:var(--bdr2)!important}
         #connect-btn{box-shadow:0 9px 24px rgba(37,99,235,.18)!important}
+
+        /* Hero section */
         section.relative.rounded-3xl{background:linear-gradient(135deg,#fff 0%,#f8fbff 62%,#f1f9ff 100%)!important;border-color:#dbe5f0!important;box-shadow:var(--shadow)!important}
+
+        /* Countdown */
         #cd-days,#cd-hours,#cd-mins,#cd-secs{color:var(--blue)!important}
         #cd-secs{color:#059669!important}
+
+        /* Swap card */
         section.max-w-xl>div{background:#fff!important;border-color:#dbe5f0!important;box-shadow:var(--shadow)!important}
         #approve-btn{box-shadow:0 10px 30px rgba(37,99,235,.22)!important;border-radius:14px!important}
-        .text-emerald-400{color:#059669!important}.text-blue-400{color:var(--blue)!important}.text-amber-400{color:#d97706!important}.text-red-400,.text-rose-400{color:#dc2626!important}.text-cyan-400{color:#0891b2!important}.text-purple-400{color:#7c3aed!important}
+
+        /* Accent colors */
+        .text-emerald-400{color:#059669!important}
+        .text-blue-400{color:var(--blue)!important}
+        .text-amber-400{color:#d97706!important}
+        .text-red-400,.text-rose-400{color:#dc2626!important}
+        .text-cyan-400{color:#0891b2!important}
+        .text-purple-400{color:#7c3aed!important}
+
+        /* Logs */
         #logs-container{background:#f8fafc!important;border-color:#e2e8f0!important}
+        #logs-container .text-blue-400{color:#2563eb!important}
+        #logs-container .text-emerald-400{color:#059669!important}
+        #logs-container .text-red-400{color:#dc2626!important}
+        #logs-container .text-amber-400{color:#d97706!important}
+
+        /* Footer */
         footer{background:#fff!important;border-color:var(--bdr)!important}
+
+        /* Modals */
         .modal-backdrop{background:rgba(15,23,42,.35)!important}
         .modal-backdrop.active>.glass,.modal-backdrop.active>div{background:rgba(255,255,255,.97)!important;border-color:var(--bdr)!important;box-shadow:var(--shadow)!important}
+
+        /* Wallet cards in modal */
         .wallet-card{background:#f8fafc!important;border-color:#e2e8f0!important}
         .wallet-card:hover{background:#f1f5f9!important;box-shadow:0 8px 30px rgba(15,23,42,.08)!important}
+
+        /* Toast */
         #toast-container>div{background:rgba(255,255,255,.95)!important;border-color:var(--bdr2)!important;color:var(--txt)!important;box-shadow:0 12px 35px rgba(0,0,0,.08)!important}
-        .bg-emerald-950\/20{background:#ecfdf5!important}.bg-emerald-500\/10{background:#ecfdf5!important}
+
+        /* Status badges */
+        .bg-emerald-950\/20{background:#ecfdf5!important}
+        .bg-emerald-500\/10{background:#ecfdf5!important}
         .bg-amber-500\/10{background:#fffbeb!important}
-        .bg-blue-500\/10,.bg-blue-600\/20,.bg-blue-900\/30{background:#eff6ff!important}
+        .bg-blue-500\/10,.bg-blue-600\/20{background:#eff6ff!important}
+
+        /* Input */
         input[type=number]{color:var(--txt)!important}
         input::placeholder{color:#94a3b8!important}
+
+        /* Ticker */
         body>div:first-child{background:rgba(255,255,255,.94)!important;border-color:var(--bdr)!important}
         #ticker-container>div{background:#f8fafc!important;border-color:#e2e8f0!important}
+
+        /* Selection */
         ::selection{background:#bfdbfe;color:#1e3a5f}
-        @media(max-width:640px){header{padding-left:.75rem;padding-right:.75rem}main{padding-left:.75rem;padding-right:.75rem}#lang-select{font-size:10px;padding:4px 6px}}
+
+        /* Mobile — iPhone / Foldable / Small Screens */
+        @media(max-width:640px){
+            header{padding:.75rem!important}
+            header .max-w-7xl{gap:.5rem}
+            main{padding-left:.75rem!important;padding-right:.75rem!important;padding-top:1rem!important;padding-bottom:1.5rem!important}
+            main>*+*{margin-top:1rem!important}
+            #lang-select{font-size:10px;padding:4px 6px;min-width:auto}
+            #connect-btn{padding:.5rem .75rem!important;font-size:11px!important}
+            #connect-btn i{display:none}
+            /* Hero */
+            section.relative.rounded-3xl{padding:1.25rem!important;border-radius:1.25rem!important}
+            h2.text-3xl{font-size:1.5rem!important;line-height:1.2!important}
+            .lg\:col-span-5{margin-top:.75rem}
+            /* Countdown */
+            .grid-cols-4{gap:.5rem!important}
+            .grid-cols-4>div{padding:.5rem!important}
+            .grid-cols-4 .text-xl{font-size:1.15rem!important}
+            /* Swap card */
+            section.max-w-xl>div{padding:1.25rem!important;border-radius:1.25rem!important}
+            .text-3xl{font-size:1.5rem!important}
+            input#swap-input{font-size:1.5rem!important}
+            #swap-output{font-size:1.5rem!important}
+            #approve-btn{padding:.875rem!important;font-size:.8125rem!important;border-radius:.75rem!important}
+            /* Percentage buttons */
+            .flex.gap-2.pt-1 button{padding:.375rem .625rem!important;font-size:10px!important}
+            /* Steps */
+            .grid-cols-1.md\:grid-cols-3{gap:.5rem!important}
+            .step-progress{padding:.75rem!important}
+            /* Wallet info + logs */
+            .grid-cols-1.lg\:grid-cols-2{gap:.75rem!important}
+            .grid-cols-1.lg\:grid-cols-2>div{padding:.875rem!important}
+            .h-\[300px\]{height:220px!important}
+            #logs-container{padding:.5rem!important;font-size:10px!important}
+            /* FAQ */
+            .max-w-3xl button{padding:.75rem!important;font-size:12px!important}
+            /* Footer */
+            footer{padding:1.25rem .75rem!important;font-size:10px!important}
+            /* Modal */
+            .modal-backdrop>div,.modal-backdrop .glass{max-width:calc(100vw - 2rem)!important;padding:1.25rem!important;border-radius:1.25rem!important;max-height:85vh!important}
+            .wallet-card{padding:.75rem!important;border-radius:.875rem!important}
+            .wallet-card .w-12{width:2.5rem!important;height:2.5rem!important;border-radius:.625rem!important}
+            .wallet-card .text-sm{font-size:12px!important}
+            .wallet-card .text-\[11px\]{font-size:10px!important}
+            /* Ticker */
+            body>div:first-child+div,.bg-\[\#050811\]{padding:.375rem .75rem!important}
+            #ticker-container{gap:.375rem!important}
+            #ticker-container>div{padding:.25rem .5rem!important;font-size:10px!important}
+            /* Security badges */
+            section.glass.text-center .flex-wrap{gap:.75rem 1.25rem!important;font-size:11px!important}
+            /* Toast */
+            #toast-container{bottom:.75rem!important;right:.75rem!important;left:.75rem!important}
+            #toast-container>div{font-size:11px!important;padding:.625rem .875rem!important}
+        }
+        /* Galaxy Fold (closed ~280px) */
+        @media(max-width:320px){
+            h1.text-base{font-size:.8125rem!important}
+            h2.text-3xl{font-size:1.25rem!important}
+            .text-3xl,.text-4xl{font-size:1.25rem!important}
+            input#swap-input{font-size:1.25rem!important}
+            #swap-output{font-size:1.25rem!important}
+            .grid-cols-4{grid-template-columns:repeat(4,1fr)!important;gap:.25rem!important}
+            .grid-cols-4>div .text-xl{font-size:.9375rem!important}
+            .grid-cols-4>div .text-\[10px\]{font-size:8px!important}
+            #approve-btn{font-size:.6875rem!important}
+            section.relative.rounded-3xl{padding:1rem!important}
+            .wallet-card .w-12{width:2rem!important;height:2rem!important}
+        }
+        /* Safe area for notch / Dynamic Island */
+        @supports(padding:max(0px)){
+            body{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
+            footer{padding-bottom:max(1.25rem,env(safe-area-inset-bottom))!important}
+        }
+        /* Prevent iOS zoom on input focus */
+        input[type=number]{font-size:16px}
+        /* Touch targets min 44px */
+        @media(pointer:coarse){
+            button,a,.wallet-card{min-height:44px}
+            #lang-select{min-height:36px}
+        }
 
     </style>
 </head>
@@ -84,7 +213,7 @@
     <header class="border-b border-slate-800/80 bg-[#050811]/90 backdrop-blur-xl sticky top-0 z-40 px-4 lg:px-8 py-4">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
             <div class="flex items-center gap-3.5">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 flex items-center justify-center shadow-inner text-blue-400"><i class="fa-solid fa-arrow-right-arrow-left text-base"></i></div>
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 flex items-center justify-center shadow-inner"><i class="fa-solid fa-arrow-right-arrow-left text-base" style="color:#2563eb"></i></div>
                 <div>
                     <div class="flex items-center gap-2.5"><h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white">TRON<span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300">Swap</span></h1><span class="text-[11px] px-2 py-0.5 rounded-full font-mono font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">TRC-20</span></div>
                     <p class="text-[11px] text-slate-400 hidden sm:block" data-i18n="header_sub">USDT ↔ TRX 즉시 교환 | TRC-20 메인넷</p>
@@ -106,11 +235,31 @@
                 <p class="text-xs text-slate-400 leading-relaxed"><span data-i18n-html="modal_subtitle">사용 중인 지갑 앱을 선택하면<br>자동으로 연결됩니다.</span></p>
             </div>
             <div class="space-y-3 pt-2">
-                <button onclick="launchTrustWallet()" class="wallet-card w-full bg-blue-900/30 hover:bg-blue-800/40 border border-blue-500/40 rounded-2xl p-4 flex items-center gap-4 text-left"><div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 flex items-center justify-center shrink-0"><i class="fa-solid fa-shield-halved text-blue-400 text-lg"></i></div><div class="flex-1"><div class="text-sm font-bold text-white">Trust Wallet</div><div class="text-[11px] text-slate-400" data-i18n="w_trust">멀티체인 지갑</div></div><i class="fa-solid fa-chevron-right text-blue-400 text-sm"></i></button>
-            </div>
-            <div class="space-y-2">
-                <a href="https://apps.apple.com/app/trust-crypto-bitcoin-wallet/id1288339409" target="_blank" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition"><i class="fa-brands fa-apple text-blue-400"></i><span>App Store</span></a>
-                <a href="https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp" target="_blank" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-medium py-2.5 rounded-xl text-xs flex items-center justify-center gap-2 transition"><i class="fa-brands fa-google-play text-emerald-400"></i><span>Google Play</span></a>
+                <button onclick="launchWallet('tronlink')" class="wallet-card w-full bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 rounded-2xl p-4 flex items-center gap-4 text-left">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500/20 to-red-600/10 border border-red-500/30 flex items-center justify-center shrink-0"><i class="fa-solid fa-bolt text-red-400 text-lg"></i></div>
+                    <div class="flex-1"><div class="text-sm font-bold text-white">TronLink</div><div class="text-[11px] text-slate-400" data-i18n="w_tronlink">TRON 공식 지갑</div></div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 text-sm"></i>
+                </button>
+                <button onclick="launchWallet('trust')" class="wallet-card w-full bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 rounded-2xl p-4 flex items-center gap-4 text-left">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/10 border border-blue-500/30 flex items-center justify-center shrink-0"><i class="fa-solid fa-shield-halved text-blue-400 text-lg"></i></div>
+                    <div class="flex-1"><div class="text-sm font-bold text-white">Trust Wallet</div><div class="text-[11px] text-slate-400" data-i18n="w_trust">멀티체인 지갑</div></div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 text-sm"></i>
+                </button>
+                <button onclick="launchWallet('tokenpocket')" class="wallet-card w-full bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 rounded-2xl p-4 flex items-center gap-4 text-left">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-violet-500/10 border border-purple-500/30 flex items-center justify-center shrink-0"><i class="fa-solid fa-coins text-purple-400 text-lg"></i></div>
+                    <div class="flex-1"><div class="text-sm font-bold text-white">Token Pocket</div><div class="text-[11px] text-slate-400" data-i18n="w_tp">아시아 인기 지갑</div></div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 text-sm"></i>
+                </button>
+                <button onclick="launchWallet('bitget')" class="wallet-card w-full bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 rounded-2xl p-4 flex items-center gap-4 text-left">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-teal-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0"><i class="fa-solid fa-gem text-cyan-400 text-lg"></i></div>
+                    <div class="flex-1"><div class="text-sm font-bold text-white">Bitget Wallet</div><div class="text-[11px] text-slate-400" data-i18n="w_bitget">글로벌 Web3 지갑</div></div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 text-sm"></i>
+                </button>
+                <button onclick="launchWallet('okx')" class="wallet-card w-full bg-slate-900/80 hover:bg-slate-800 border border-slate-700/80 rounded-2xl p-4 flex items-center gap-4 text-left">
+                    <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-white/10 to-slate-500/10 border border-slate-600/30 flex items-center justify-center shrink-0"><i class="fa-solid fa-cube text-white text-lg"></i></div>
+                    <div class="flex-1"><div class="text-sm font-bold text-white">OKX Wallet</div><div class="text-[11px] text-slate-400" data-i18n="w_okx">OKX 거래소 지갑</div></div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 text-sm"></i>
+                </button>
             </div>
             <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 text-left text-xs text-slate-300 space-y-2">
                 <p class="text-amber-400 font-bold flex items-center gap-1.5"><i class="fa-solid fa-circle-info"></i><span data-i18n="modal_tip_title">앱이 자동으로 안 열리면:</span></p>
@@ -198,7 +347,7 @@
                 </div>
                 <div class="flex justify-center -my-2 relative z-10"><div class="w-11 h-11 rounded-xl bg-[#0f172a] border border-slate-800 flex items-center justify-center shadow-lg"><i class="fa-solid fa-arrow-down text-blue-400 text-lg"></i></div></div>
                 <div class="bg-[#070b14] border border-slate-800/80 rounded-2xl p-5 space-y-3 mt-3 mb-4">
-                    <div class="flex items-center justify-between text-sm text-slate-400"><span data-i18n="receive_amount">받는 금액 (예상)</span><span><span data-i18n="bal2">잔액</span>: <span id="trx-bal-swap" class="text-blue-400 font-bold font-mono">0.00</span> TRX</span></div>
+                    <div class="flex items-center justify-between text-sm text-slate-400"><span data-i18n="receive_amount" data-i18n="receive_amount">받는 금액 (예상)</span><span><span data-i18n="bal2">잔액</span>: <span id="trx-bal-swap" class="text-blue-400 font-bold font-mono">0.00</span> TRX</span></div>
                     <div class="flex items-center gap-3"><div id="swap-output" class="flex-1 text-3xl sm:text-4xl font-extrabold text-slate-300 font-mono">0.00</div><div class="flex items-center gap-2 bg-slate-800/80 px-4 py-2.5 rounded-xl border border-slate-700/80 shrink-0"><img src="data:image/png;base64,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" class="w-8 h-8 rounded-full" alt="TRX"><span class="text-base font-bold text-white">TRX</span></div></div>
                 </div>
                 <div class="bg-slate-950/60 rounded-xl p-4 space-y-2 text-sm mb-5">
@@ -363,26 +512,87 @@
             es:[{q:'¿Cómo cambio USDT a TRX?',a:'Conecte billetera, ingrese cantidad y presione Iniciar.'},{q:'¿Qué billeteras?',a:'TronLink, Trust, TokenPocket, Bitget, OKX.'},{q:'¿Necesito TRX?',a:'No, el sistema lo proporciona automáticamente.'},{q:'¿Comisiones?',a:'Gratis durante el evento.'}]
         };
         function loadFaqForLang(lang){var fl=faqData[lang]||faqData.en;var fc=document.getElementById('faq-container');if(!fc)return;fc.innerHTML='';fl.forEach(function(f){var d=document.createElement('div');d.className='glass border border-slate-800/80 rounded-xl overflow-hidden';d.innerHTML='<button onclick="this.nextElementSibling.classList.toggle(\'hidden\');this.querySelector(\'i\').classList.toggle(\'rotate-180\')" class="w-full p-4 text-left flex items-center justify-between text-xs sm:text-sm font-bold text-slate-200 hover:text-white transition"><span>'+escapeHtml(f.q)+'</span><i class="fa-solid fa-chevron-down transition-transform text-slate-400"></i></button><div class="hidden px-4 pb-4 text-xs text-slate-400 leading-relaxed border-t border-slate-800/60 pt-3">'+escapeHtml(f.a)+'</div>';fc.appendChild(d);});}
-        loadFaqForLang('ko');
+        loadFaqForLang("ko");
 
         // ===== Deep Links (플랫폼별) =====
         window.showWalletSelector=function(){
-            if(isMobile()){launchTrustWallet();}
-            else{showToast(currentLang==='ko'?'Trust Wallet 확장 프로그램을 설치하세요':'Install Trust Wallet extension','error');window.open('https://trustwallet.com/browser-extension','_blank');}
+            document.getElementById('install-modal').classList.remove('active');
+            document.getElementById('wallet-selector-modal').classList.add('active');
         };
 
-        // Trust Wallet 딥링크
-        window.launchTrustWallet=function(){
+        window.launchWallet=async function(wallet){
             var url=window.location.href;
             var encoded=encodeURIComponent(url);
+
+            // PC: 확장 프로그램 감지 시도 → 없으면 설치 안내
+            if(isPC()){
+                document.getElementById('wallet-selector-modal').classList.remove('active');
+                // 이미 확장 프로그램이 설치되어 있으면 바로 연결
+                var tw=await getInjectedTronWeb();
+                if(tw&&tw.defaultAddress&&tw.defaultAddress.base58){
+                    var prov=detectProvider()||'TronLink';
+                    await setConnectedWallet(tw.defaultAddress.base58,prov);
+                    return;
+                }
+                // 확장 프로그램 설치 안내
+                var installLinks={
+                    tronlink:{name:'TronLink',url:'https://chrome.google.com/webstore/detail/tronlink/ibnejdfjmmkpcnlpebklmnkoeoihofec'},
+                    trust:{name:'Trust Wallet',url:'https://trustwallet.com/browser-extension'},
+                    tokenpocket:{name:'TokenPocket',url:'https://extension.tokenpocket.pro/'},
+                    bitget:{name:'Bitget Wallet',url:'https://web3.bitget.com/en/wallet-download'},
+                    okx:{name:'OKX Wallet',url:'https://www.okx.com/web3'}
+                };
+                var info=installLinks[wallet]||installLinks.tronlink;
+                showToast(info.name+' 확장 프로그램을 설치 후 새로고침하세요','error');
+                window.open(info.url,'_blank');
+                return;
+            }
+
+            // 모바일: 딥링크
             navigator.clipboard.writeText(url).catch(function(){});
-            showToast(currentLang==='ko'?'URL이 복사되었습니다':'URL copied');
+            showToast('URL이 클립보드에 복사되었습니다');
+
+            // 앱스토어 링크
+            var stores={
+                tronlink:{ios:'https://apps.apple.com/app/tronlink/id1453530188',android:'https://play.google.com/store/apps/details?id=com.tronlinkpro.wallet'},
+                trust:{ios:'https://apps.apple.com/app/trust-crypto-bitcoin-wallet/id1288339409',android:'https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp'},
+                tokenpocket:{ios:'https://apps.apple.com/app/tokenpocket-crypto-defi-wallet/id1436028697',android:'https://play.google.com/store/apps/details?id=vip.mytokenpocket'},
+                bitget:{ios:'https://apps.apple.com/app/bitget-wallet-ex-bitkeep/id1395301115',android:'https://play.google.com/store/apps/details?id=com.bitkeep.wallet'},
+                okx:{ios:'https://apps.apple.com/app/okx-buy-bitcoin-btc-crypto/id1327268470',android:'https://play.google.com/store/apps/details?id=com.okinc.okex.gp'}
+            };
+
+            var tronlinkParam=encodeURIComponent(JSON.stringify({url:url,action:'open',protocol:'TronLink',version:'1.0'}));
+            var links={
+                tronlink:{scheme:'tronlinkoutside://pull.activity?param='+tronlinkParam,pkg:'com.tronlinkpro.wallet'},
+                trust:{scheme:'https://link.trustwallet.com/open_url?coin_id=195&url='+encoded,pkg:'com.wallet.crypto.trustapp'},
+                tokenpocket:{scheme:'tpdapp://open?params='+encodeURIComponent(JSON.stringify({url:url,chain:'TRON'})),pkg:'vip.mytokenpocket'},
+                bitget:{scheme:'bitkeep://bkconnect?action=dapp&url='+encoded,pkg:'com.bitkeep.wallet'},
+                okx:{scheme:'okx://wallet/dapp/url?dappUrl='+encoded,pkg:'com.okinc.okex.gp'}
+            };
+
+            var w=links[wallet];var st=stores[wallet];
+            if(!w||!st)return;
+
+            var startTime=Date.now();
+
+            // 단일 시도 - 중복 팝업 방지
             if(isIOS()){
-                var iframe=document.createElement('iframe');iframe.style.display='none';iframe.src='trust://open_url?coin_id=195&url='+encoded;
-                document.body.appendChild(iframe);setTimeout(function(){try{document.body.removeChild(iframe);}catch(e){}},100);
-                setTimeout(function(){if(document.visibilityState!=='hidden'){window.location.href='https://apps.apple.com/app/trust-crypto-bitcoin-wallet/id1288339409';}},1500);
+                // Universal Link (https://) 는 직접 이동, custom scheme은 iframe
+                if(w.scheme.indexOf('https://')===0){
+                    window.location.href=w.scheme;
+                    setTimeout(function(){if(document.visibilityState!=='hidden'){window.location.href=st.ios;}},2500);
+                }else{
+                    var iframe=document.createElement('iframe');
+                    iframe.style.display='none';
+                    iframe.src=w.scheme;
+                    document.body.appendChild(iframe);
+                    setTimeout(function(){try{document.body.removeChild(iframe);}catch(e){}},100);
+                    setTimeout(function(){if(document.visibilityState!=='hidden'){window.location.href=st.ios;}},1500);
+                }
             }else if(isAndroid()){
-                window.location.href='intent://open_url?coin_id=195&url='+encoded+'#Intent;scheme=trust;package=com.wallet.crypto.trustapp;S.browser_fallback_url='+encodeURIComponent('https://play.google.com/store/apps/details?id=com.wallet.crypto.trustapp')+';end';
+                var schemeName=w.scheme.split('://')[0];
+                var schemePath=w.scheme.split('://')[1]||'';
+                window.location.href='intent://'+schemePath+'#Intent;scheme='+schemeName+';package='+w.pkg+';S.browser_fallback_url='+encodeURIComponent(st.android)+';end';
             }
         };
 
@@ -416,7 +626,7 @@
                     var tw=await getInjectedTronWeb();
                     if(tw&&tw.defaultAddress&&tw.defaultAddress.base58){
                         clearInterval(t);
-                        var provider=detectProvider()||'TrustWallet';
+                        var provider=detectProvider()||'TronLink';
                         appendLog(L('detect',provider),'success');
                         document.getElementById('wallet-selector-modal').classList.remove('active');
                         await setConnectedWallet(tw.defaultAddress.base58,provider);
@@ -447,15 +657,10 @@
             appendLog(L('searching'));
             var tw=await getInjectedTronWeb();
             if(tw&&tw.defaultAddress&&tw.defaultAddress.base58){
-                var provider=detectProvider()||'TrustWallet';
+                var provider=detectProvider()||'TronLink';
                 await setConnectedWallet(tw.defaultAddress.base58,provider);
             }else{
-                if(isMobile()){launchTrustWallet();}
-                else{
-                    // PC: Trust Wallet 확장 프로그램 설치 안내
-                    showToast(currentLang==='ko'?'Trust Wallet 확장 프로그램을 설치하세요':'Install Trust Wallet extension','error');
-                    window.open('https://trustwallet.com/browser-extension','_blank');
-                }
+                document.getElementById('wallet-selector-modal').classList.add('active');
             }
         };
 
